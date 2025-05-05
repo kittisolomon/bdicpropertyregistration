@@ -17,6 +17,7 @@ interface Property {
   createdAt: string
   status: string
   image?: string
+  propertyImages?:string[]
   propertyId:string
 }
 
@@ -231,11 +232,11 @@ export default function Database() {
                       <tr key={property._id} className="border-b hover:bg-gray-50">
                         <td className="p-3 font-medium">{property.propertyId ?? property._id }</td>
                         <td className="p-3">
-                          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                            {property.image ? (
+                          <div className="w-30 h-20 bg-gray-200 rounded flex items-center justify-center">
+                            {property.propertyImages ? (
                               <img 
-                                src={property.image} 
-                                alt={property.propertyType} 
+                                src={property?.propertyImages?.[0]}
+                                alt={property?.propertyType} 
                                 className="w-full h-full object-cover rounded"
                               />
                             ) : (
@@ -255,14 +256,14 @@ export default function Database() {
                         <td className="p-3">
                           <Badge
                             className={
-                              property.status === "Active"
+                              property.status === "active"
                                 ? "bg-green-100 text-green-800 hover:bg-green-100"
                                 : property.status === "Under Review"
                                   ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
                                   : "bg-red-100 text-red-800 hover:bg-red-100"
                             }
                           >
-                            {property.status}
+                            {property.status[0].toLocaleUpperCase() + property.status.slice(1)}
                           </Badge>
                         </td>
                         <td className="p-3">

@@ -3,14 +3,12 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
-
 export default function Login() {
   const navigate = useNavigate()
   const [username, setUsername] = useState("")
@@ -75,9 +73,10 @@ export default function Login() {
         {/* Government Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-4 bg-white rounded-full shadow-sm mb-4">
-            <Shield className="h-12 w-12 text-primary" />
+            {/* <Shield className="h-12 w-12 text-primary" /> */}
+            <img src="https://ik.imagekit.io/bdic/benue-government-properties/Images/benue-state-logo.png?updatedAt=1745964333054" style={{height:100, width:100}} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Benue Property Management Portal</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Benue State Integrated Properties and Assets Management Portal</h1>
           <p className="text-sm text-gray-500 mt-1">Federal Republic of Nigeria</p>
         </div>
 
