@@ -12,7 +12,7 @@ import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { IKContext, IKUpload } from 'imagekitio-react'
 import axios from 'axios'
-import { buildingTypes, landTypes, vehicleTypes, educationalInstitutionTypes, equipmentAndInfrastructureTypes } from "@/lib/constants"
+import { buildingTypes, vehicleTypes, educationalInstitutionTypes, equipmentAndInfrastructureTypes } from "@/lib/constants"
 import MapWithMarkers from "./MapWithMarkers"
 
 // Add this constant at the top of the file after imports

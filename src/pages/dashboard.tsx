@@ -188,16 +188,16 @@ export default function Dashboard() {
     }
   }
 
-  const checkAuthExpired = async () => {
-    const token = localStorage.getItem("authToken")
-    if(!token) return alert("you don login?")
-    const response = await axios.post("https://bdicisp.onrender.com/api/v1/auth/check-auth-expired",{
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    alert(response.data)
-  }
+  // const checkAuthExpired = async () => {
+  //   const token = localStorage.getItem("authToken")
+  //   if(!token) return alert("you don login?")
+  //   const response = await axios.post("https://bdicisp.onrender.com/api/v1/auth/check-auth-expired",{
+  //     headers: {
+  //       Authorization: `Bearer ${token}`
+  //     }
+  //   })
+  //   alert(response.data)
+  // }
   
   useEffect(() => {
     const token = localStorage.getItem("authToken")
