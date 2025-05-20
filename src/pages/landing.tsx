@@ -53,7 +53,7 @@ export default function Landing() {
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo/Title */}
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/landing")}>
-            <Shield className="h-7 w-7 text-emerald-600" style={{ color: '#1CA260' }} />
+            <img src="https://ik.imagekit.io/bdic/benue-government-properties-web/business/logo/bdiclog.png?updatedAt=1747397802426" alt="Logo" className="h-7 w-7" />
             <span className="font-semibold text-lg text-gray-800">BSIPAM Portal</span>
           </div>
 
@@ -116,7 +116,7 @@ export default function Landing() {
               </motion.div>
               <motion.div className="md:w-1/2 pl-8" variants={fadeIn}>
                 <img
-                  src="/home_dash.png"
+                  src="https://ik.imagekit.io/bdic/benue-government-properties-web/business/logo/home_dash.png?updatedAt=1747395166126"
                   alt="Property Management Dashboard Preview"
                   className="rounded-lg shadow-2xl w-full h-auto object-contain"
                 />
@@ -235,7 +235,7 @@ export default function Landing() {
               </motion.div>
               <motion.div className="relative mt-8 md:mt-0" variants={fadeIn}>
                 <img
-                  src="/feat.png"
+                  src="https://ik.imagekit.io/bdic/benue-government-properties-web/business/logo/feat.png?updatedAt=1747395165089"
                   alt="Features diagram"
                   className="rounded-lg shadow-xl w-full h-auto object-contain max-w-md mx-auto"
                 />

@@ -7,13 +7,54 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select"
-import { Plus, Trash2, Check, Building2, MapPin, Truck, Home as House, Fuel, Beaker, ChevronRight, FileText, Upload, QrCode } from "lucide-react"
+import { Plus, Trash2, Check, Building2, MapPin, Truck, Home as House, Fuel, Beaker, ChevronRight, FileText, Upload, QrCode, X } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { IKContext, IKUpload } from 'imagekitio-react'
 import axios from 'axios'
-import { buildingTypes, landTypes, vehicleTypes } from "@/lib/constants"
+import { buildingTypes, landTypes, vehicleTypes, educationalInstitutionTypes, equipmentAndInfrastructureTypes } from "@/lib/constants"
 import MapWithMarkers from "./MapWithMarkers"
+
+// Add this constant at the top of the file after imports
+const stateLGAs: Record<string, string[]> = {
+  "fct": ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "Municipal"],
+  "abia": ["Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano", "Isiala Ngwa North", "Isiala Ngwa South", "Isuikwuato", "Obi Ngwa", "Ohafia", "Osisioma", "Ugwunagbo", "Ukwa East", "Ukwa West", "Umuahia North", "Umuahia South", "Umu Nneochi"],
+  "adamawa": ["Demsa", "Fufure", "Ganye", "Girei", "Gombi", "Guyuk", "Hong", "Jada", "Lamurde", "Madagali", "Maiha", "Mayo Belwa", "Michika", "Mubi North", "Mubi South", "Numan", "Shelleng", "Song", "Toungo", "Yola North", "Yola South"],
+  "akwa-ibom": ["Abak", "Eastern Obolo", "Eket", "Esit Eket", "Essien Udim", "Etim Ekpo", "Etinan", "Ibeno", "Ibesikpo Asutan", "Ibiono-Ibom", "Ika", "Ikono", "Ikot Abasi", "Ikot Ekpene", "Ini", "Itu", "Mbo", "Mkpat-Enin", "Nsit-Atai", "Nsit-Ibom", "Nsit-Ubium", "Obot Akara", "Okobo", "Onna", "Oron", "Oruk Anam", "Udung-Uko", "Ukanafun", "Uruan", "Urue-Offong/Oruko", "Uyo"],
+  "anambra": ["Aguata", "Anambra East", "Anambra West", "Anaocha", "Awka North", "Awka South", "Ayamelum", "Dunukofia", "Ekwusigo", "Idemili North", "Idemili South", "Ihiala", "Njikoka", "Nnewi North", "Nnewi South", "Ogbaru", "Onitsha North", "Onitsha South", "Orumba North", "Orumba South", "Oyi"],
+  "bauchi": ["Alkaleri", "Bauchi", "Bogoro", "Damban", "Darazo", "Dass", "Gamawa", "Ganjuwa", "Giade", "Itas/Gadau", "Jama'are", "Katagum", "Kirfi", "Misau", "Ningi", "Shira", "Tafawa Balewa", "Toro", "Warji", "Zaki"],
+  "bayelsa": ["Brass", "Ekeremor", "Kolokuma/Opokuma", "Nembe", "Ogbia", "Sagbama", "Southern Ijaw", "Yenagoa"],
+  "benue": ["Ado", "Agatu", "Apa", "Buruku", "Gboko", "Guma", "Gwer East", "Gwer West", "Katsina-Ala", "Konshisha", "Kwande", "Logo", "Makurdi", "Obi", "Ogbadibo", "Ohimini", "Oju", "Okpokwu", "Oturkpo", "Tarka", "Ukum", "Ushongo", "Vandeikya"],
+  "borno": ["Abadam", "Askira/Uba", "Bama", "Bayo", "Biu", "Chibok", "Damboa", "Dikwa", "Gubio", "Guzamala", "Gwoza", "Hawul", "Jere", "Kaga", "Kala/Balge", "Konduga", "Kukawa", "Kwaya Kusar", "Mafa", "Magumeri", "Maiduguri", "Marte", "Mobbar", "Monguno", "Ngala", "Nganzai", "Shani"],
+  "cross-river": ["Abi", "Akamkpa", "Akpabuyo", "Bakassi", "Bekwarra", "Biase", "Boki", "Calabar Municipal", "Calabar South", "Etung", "Ikom", "Obanliku", "Obubra", "Obudu", "Odukpani", "Ogoja", "Yakuur", "Yala"],
+  "delta": ["Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Ethiope East", "Ethiope West", "Ika North East", "Ika South", "Isoko North", "Isoko South", "Ndokwa East", "Ndokwa West", "Okpe", "Oshimili North", "Oshimili South", "Patani", "Sapele", "Udu", "Ughelli North", "Ughelli South", "Ukwuani", "Uvwie", "Warri North", "Warri South", "Warri South West"],
+  "ebonyi": ["Abakaliki", "Afikpo North", "Afikpo South", "Ebonyi", "Ezza North", "Ezza South", "Ikwo", "Ishielu", "Ivo", "Izzi", "Ohaozara", "Ohaukwu", "Onicha"],
+  "edo": ["Akoko-Edo", "Egor", "Esan Central", "Esan East", "Esan North-East", "Esan South-East", "Esan West", "Etsako Central", "Etsako East", "Etsako West", "Igueben", "Ikpoba Okha", "Oredo", "Orhionmwon", "Ovia North-East", "Ovia South-West", "Owan East", "Owan West", "Uhunmwonde"],
+  "ekiti": ["Ado Ekiti", "Efon", "Ekiti East", "Ekiti South-West", "Ekiti West", "Emure", "Gbonyin", "Ido Osi", "Ijero", "Ikere", "Ikole", "Ilejemeje", "Irepodun/Ifelodun", "Ise/Orun", "Moba", "Oye"],
+  "enugu": ["Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South", "Ezeagu", "Igbo Etiti", "Igbo Eze North", "Igbo Eze South", "Isi Uzo", "Nkanu East", "Nkanu West", "Nsukka", "Oji River", "Udenu", "Udi", "Uzo Uwani"],
+  "gombe": ["Akko", "Balanga", "Billiri", "Dukku", "Funakaye", "Gombe", "Kaltungo", "Kwami", "Nafada", "Shongom", "Yamaltu/Deba"],
+  "imo": ["Aboh Mbaise", "Ahiazu Mbaise", "Ehime Mbano", "Ezinihitte", "Ideato North", "Ideato South", "Ihitte/Uboma", "Ikeduru", "Isiala Mbano", "Isu", "Mbaitoli", "Ngor Okpala", "Njaba", "Nkwerre", "Nwangele", "Obowo", "Oguta", "Ohaji/Egbema", "Okigwe", "Orlu", "Orsu", "Oru East", "Oru West", "Owerri Municipal", "Owerri North", "Owerri West", "Unuimo"],
+  "jigawa": ["Auyo", "Babura", "Biriniwa", "Birnin Kudu", "Buji", "Dutse", "Gagarawa", "Garki", "Gumel", "Guri", "Gwaram", "Gwiwa", "Hadejia", "Jahun", "Kafin Hausa", "Kazaure", "Kiri Kasama", "Kiyawa", "Kaugama", "Maigatari", "Malam Madori", "Miga", "Ringim", "Roni", "Sule Tankarkar", "Taura", "Yankwashi"],
+  "kaduna": ["Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara", "Jaba", "Jema'a", "Kachia", "Kaduna North", "Kaduna South", "Kagarko", "Kajuru", "Kaura", "Kauru", "Kubau", "Kudan", "Lere", "Makarfi", "Sabon Gari", "Sanga", "Soba", "Zangon Kataf", "Zaria"],
+  "kano": ["Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi", "Bunkure", "Dala", "Dambatta", "Dawakin Kudu", "Dawakin Tofa", "Doguwa", "Fagge", "Gabasawa", "Garko", "Garum Mallam", "Gaya", "Gezawa", "Gwale", "Gwarzo", "Kabo", "Kano Municipal", "Karaye", "Kibiya", "Kiru", "Kumbotso", "Kunchi", "Kura", "Madobi", "Makoda", "Minjibir", "Nasarawa", "Rano", "Rimin Gado", "Rogo", "Shanono", "Sumaila", "Takai", "Tarauni", "Tofa", "Tsanyawa", "Tudun Wada", "Ungogo", "Warawa", "Wudil"],
+  "katsina": ["Bakori", "Batagarawa", "Batsari", "Baure", "Bindawa", "Charanchi", "Dandume", "Danja", "Dan Musa", "Daura", "Dutsi", "Dutsin Ma", "Faskari", "Funtua", "Ingawa", "Jibia", "Kafur", "Kaita", "Kankara", "Kankia", "Katsina", "Kurfi", "Kusada", "Mai'Adua", "Malumfashi", "Mani", "Mashi", "Matazu", "Musawa", "Rimi", "Sabuwa", "Safana", "Sandamu", "Zango"],
+  "kebbi": ["Aleiro", "Arewa Dandi", "Argungu", "Augie", "Bagudo", "Birnin Kebbi", "Bunza", "Dandi", "Fakai", "Gwandu", "Jega", "Kalgo", "Koko/Besse", "Maiyama", "Ngaski", "Sakaba", "Shanga", "Suru", "Wasagu/Danko", "Yauri", "Zuru"],
+  "kogi": ["Adavi", "Ajaokuta", "Ankpa", "Bassa", "Dekina", "Ibaji", "Idah", "Igalamela Odolu", "Ijumu", "Kabba/Bunu", "Kogi", "Lokoja", "Mopa Muro", "Ofu", "Ogori/Magongo", "Okehi", "Okene", "Olamaboro", "Omala", "Yagba East", "Yagba West"],
+  "kwara": ["Asa", "Baruten", "Edu", "Ekiti", "Ifelodun", "Ilorin East", "Ilorin South", "Ilorin West", "Irepodun", "Isin", "Kaiama", "Moro", "Offa", "Oke Ero", "Oyun", "Pategi"],
+  "lagos": ["Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa", "Badagry", "Epe", "Eti Osa", "Ibeju-Lekki", "Ifako-Ijaiye", "Ikeja", "Ikorodu", "Kosofe", "Lagos Island", "Lagos Mainland", "Mushin", "Ojo", "Oshodi-Isolo", "Shomolu", "Surulere"],
+  "nasarawa": ["Akwanga", "Awe", "Doma", "Karu", "Keana", "Keffi", "Kokona", "Lafia", "Nasarawa", "Nasarawa Egon", "Obi", "Toto", "Wamba"],
+  "niger": ["Agaie", "Agwara", "Bida", "Borgu", "Bosso", "Chanchaga", "Edati", "Gbako", "Gurara", "Katcha", "Kontagora", "Lapai", "Lavun", "Magama", "Mariga", "Mashegu", "Mokwa", "Moya", "Paikoro", "Rafi", "Rijau", "Shiroro", "Suleja", "Tafa", "Wushishi"],
+  "ogun": ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Egbado North", "Egbado South", "Ewekoro", "Ifo", "Ijebu East", "Ijebu North", "Ijebu North East", "Ijebu Ode", "Ikenne", "Imeko Afon", "Ipokia", "Obafemi Owode", "Odeda", "Odogbolu", "Ogun Waterside", "Remo North", "Shagamu"],
+  "ondo": ["Akoko North-East", "Akoko North-West", "Akoko South-East", "Akoko South-West", "Akure North", "Akure South", "Ese Odo", "Idanre", "Ifedore", "Ilaje", "Ile Oluji/Okeigbo", "Irele", "Odigbo", "Okitipupa", "Ondo East", "Ondo West", "Ose", "Owo"],
+  "osun": ["Atakunmosa East", "Atakunmosa West", "Aiyedaade", "Aiyedire", "Boluwaduro", "Boripe", "Ede North", "Ede South", "Egbedore", "Ejigbo", "Ife Central", "Ife East", "Ife North", "Ife South", "Ifedayo", "Ifelodun", "Ila", "Ilesa East", "Ilesa West", "Irepodun", "Irewole", "Isokan", "Iwo", "Obokun", "Odo Otin", "Ola Oluwa", "Olorunda", "Oriade", "Orolu", "Osogbo"],
+  "oyo": ["Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda", "Ibadan North", "Ibadan North-East", "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ibarapa Central", "Ibarapa East", "Ibarapa North", "Ido", "Irepo", "Iseyin", "Itesiwaju", "Iwajowa", "Kajola", "Lagelu", "Ogbomosho North", "Ogbomosho South", "Ogo Oluwa", "Olorunsogo", "Oluyole", "Ona Ara", "Orelope", "Ori Ire", "Oyo East", "Oyo West", "Saki East", "Saki West", "Surulere"],
+  "plateau": ["Bokkos", "Barkin Ladi", "Bassa", "Jos East", "Jos North", "Jos South", "Kanam", "Kanke", "Langtang North", "Langtang South", "Mangu", "Mikang", "Pankshin", "Qua'an Pan", "Riyom", "Shendam", "Wase"],
+  "rivers": ["Abua/Odual", "Ahoada East", "Ahoada West", "Akuku-Toru", "Andoni", "Asari-Toru", "Bonny", "Degema", "Eleme", "Emuoha", "Etche", "Gokana", "Ikwerre", "Khana", "Obio/Akpor", "Ogba/Egbema/Ndoni", "Ogu/Bolo", "Okrika", "Omuma", "Opobo/Nkoro", "Oyigbo", "Port Harcourt", "Tai"],
+  "sokoto": ["Binji", "Bodinga", "Dange Shuni", "Gada", "Goronyo", "Gudu", "Gwadabawa", "Illela", "Isa", "Kebbe", "Kware", "Rabah", "Sabo Birni", "Shagari", "Silame", "Sokoto North", "Sokoto South", "Tambuwal", "Tangaza", "Tureta", "Wamako", "Wurno", "Yabo"],
+  "taraba": ["Ardo Kola", "Bali", "Donga", "Gashaka", "Gassol", "Ibi", "Jalingo", "Karim Lamido", "Kurmi", "Lau", "Sardauna", "Takum", "Ussa", "Wukari", "Yorro", "Zing"],
+  "yobe": ["Bade", "Bursari", "Damaturu", "Fika", "Fune", "Geidam", "Gujba", "Gulani", "Jakusko", "Karasuwa", "Machina", "Nangere", "Nguru", "Potiskum", "Tarmuwa", "Yunusari", "Yusufari"],
+  "zamfara": ["Anka", "Bakura", "Birnin Magaji/Kiyaw", "Bukkuyum", "Bungudu", "Chafe", "Gummi", "Gusau", "Kaura Namoda", "Maradun", "Maru", "Shinkafi", "Talata Mafara", "Tsafe", "Zurmi"]
+};
 
 interface FormData {
   registeredBy:string
@@ -55,6 +96,7 @@ interface FormData {
   roadAccess?: string
   utilityAccess?: string[]
   proposedUse?: string
+  currentUse?: string
 
   // Vehicle Specific Fields
   vehicleType?: string
@@ -131,6 +173,13 @@ interface FormData {
   tankCapacities?: { type: string; capacity: string; unit: string }[]
   pumpTypes?: { type: string; count: string }[]
   safetyEquipment?: { name: string; quantity: string; lastInspection: string }[]
+  otherPropertySubtype?: string
+  totalRooms?: string
+  totalBeds?: string
+  operatingHours?: string
+  maintenanceSchedule?: string
+  equipmentList?: { name: string; quantity: string; condition: string }[]
+  infrastructureDetails?: { type: string; specifications: string; status: string }[]
 }
 
 interface PropertyStats {
@@ -161,6 +210,65 @@ const authenticator =  async () => {
     } catch (error) {
         //throw new Error(`Authentication request failed: ${error.message}`);
     }
+};
+
+// Add this validation function near the top of the file, after the interfaces
+const validateStep = (step: number, formData: FormData, photos: string[]): boolean => {
+  switch (step) {
+    case 1:
+      // Basic validation for step 1
+      if (!formData.propertyType || !formData.propertyName || !formData.description || !formData.acquisitionDate || !formData.estimatedValue) {
+        return false;
+      }
+
+      // Property type specific validations
+      switch (formData.propertyType) {
+        case "house":
+          return !!(formData.buildingType && formData.floorCount && formData.totalArea && formData.yearBuilt && formData.buildingCondition);
+        case "land":
+          return !!(
+            formData.landType &&
+            formData.landCondition &&
+            formData.plotNumber && 
+            formData.layoutName && 
+            formData.titleType && 
+            formData.titleReferenceNumber && 
+            formData.landSize && 
+            formData.landSizeUnit && 
+            formData.shape && 
+            formData.topography && 
+            formData.currentUse && 
+            formData.proposedUse && 
+            formData.roadAccess && 
+            formData.zoningClassification
+          );
+        case "vehicle":
+          return !!(formData.vehicleType && formData.makeModel && formData.year && formData.registrationNumber);
+        case "institutions":
+          return !!(formData.institutionType && formData.institutionLevel && formData.institutionName && formData.yearEstablished);
+        case "petroleum":
+          return !!(formData.facilityType && formData.facilityCapacity && formData.facilityStatus);
+        case "others":
+          return !!(formData.otherPropertySubtype && formData.facilityCapacity && formData.facilityStatus);
+        default:
+          return false;
+      }
+
+    case 2:
+      // Location details validation
+      return !!(formData.state && formData.address && formData.latitude && formData.longitude);
+
+    case 3:
+      // Documentation validation
+      return photos.length >= 3;
+
+    case 4:
+      // Confirmation validation
+      return formData.confirmed;
+
+    default:
+      return false;
+  }
 };
 
 export default function Registration() {
@@ -310,11 +418,8 @@ console.log(formData.propertyImages)
   };
   
   const onPdeedsSuccess = (res:any) => {
-
-    //setPropertyDeeds((prev)=> [...prev, res.url])
     setUploading(false)
     setPropertyDeeds((prevImages) => [...prevImages , res.url]);
-
     console.log("Success", res);
   };
 
@@ -330,11 +435,8 @@ console.log(formData.propertyImages)
   };
   
   const onIdeedsSuccess = (res:any) => {
-
-    //setPropertyDeeds((prev)=> [...prev, res.url])
     setIUploading(false)
     setPropertyPhotos((prevImages) => [...prevImages , res.url]);
-
     console.log("Success", res,propertyPhotos);
   };
 
@@ -385,6 +487,15 @@ console.log(formData.propertyImages)
     }));
   };
 
+  // Add these new functions for removing images
+  const handleRemoveDeed = (indexToRemove: number) => {
+    setPropertyDeeds((prevDeeds) => prevDeeds.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleRemovePhoto = (indexToRemove: number) => {
+    setPropertyPhotos((prevPhotos) => prevPhotos.filter((_, index) => index !== indexToRemove));
+  };
+
   const renderPropertySpecificFields = () => {
     switch (formData.propertyType) {
       case "institutions":
@@ -397,15 +508,14 @@ console.log(formData.propertyImages)
                   <SelectValue placeholder="Select institution type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="university">University</SelectItem>
-                  <SelectItem value="polytechnic">Polytechnic</SelectItem>
-                  <SelectItem value="collegeofeducation">College Of Education</SelectItem>
-                  <SelectItem value="secondary">Secondary School</SelectItem>
-                  <SelectItem value="NurseryPrimarySecondary">Nursery,Primary & Secondary School</SelectItem>
-                  <SelectItem value="vocational">Vocational/Training Center</SelectItem>
-                  <SelectItem value="special">Special Education School</SelectItem>
-                  <SelectItem value="technical">Technical College</SelectItem>
-                  <SelectItem value="research">Research Institute</SelectItem>
+                  {Object.entries(educationalInstitutionTypes).map(([category, types]) => (
+                    <SelectGroup key={category}>
+                      <SelectLabel>{category}</SelectLabel>
+                      {types.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -872,305 +982,300 @@ console.log(formData.propertyImages)
             {/* --- Land Identification --- */}
             <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Land Identification</h4>
             <div className="space-y-2">
-              <Label htmlFor="plotNumber">Plot Number</Label>
-              <Input id="plotNumber" name="plotNumber" value={formData.plotNumber || ""} onChange={handleInputChange} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="blockNumber">Block Number (Optional)</Label>
-              <Input id="blockNumber" name="blockNumber" value={formData.blockNumber || ""} onChange={handleInputChange} />
-            </div>
-             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="layoutName">Layout Name/Scheme</Label>
-              <Input id="layoutName" name="layoutName" value={formData.layoutName || ""} onChange={handleInputChange} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="surveyPlanNumber">Survey Plan Number</Label>
-              <Input id="surveyPlanNumber" name="surveyPlanNumber" value={formData.surveyPlanNumber || ""} onChange={handleInputChange} />
-            </div>
-             <div className="space-y-2">
-              <Label htmlFor="beaconNumbers">Beacon Numbers (comma-separated)</Label>
-              <Input id="beaconNumbers" name="beaconNumbers" value={formData.beaconNumbers || ""} onChange={handleInputChange} />
-            </div>
-
-             {/* --- Physical Attributes --- */}
-             <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Physical Attributes</h4>
-             <div className="space-y-2">
               <Label htmlFor="landType">Land Type</Label>
-              <Select onValueChange={(value) => handleSelectChange("landType", value)} value={formData.landType}>
+              <Select onValueChange={(value) => handleSelectChange("landType", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select land type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(landTypes).map(([category, types]: [string, string[]]) => (
-                    <SelectGroup key={category}>
-                      <SelectLabel>{category.toUpperCase()}</SelectLabel>
-                      {types.map((type: string) => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
+                  <SelectItem value="Residential Plot">Residential Plot</SelectItem>
+                  <SelectItem value="Commercial Plot">Commercial Plot</SelectItem>
+                  <SelectItem value="Industrial Plot">Industrial Plot</SelectItem>
+                  <SelectItem value="Agricultural Land">Agricultural Land / Farmland</SelectItem>
+                  <SelectItem value="Forest Reserve">Forest Reserve / Green Zone</SelectItem>
+                  <SelectItem value="School Reserved Land">School Reserved Land</SelectItem>
+                  <SelectItem value="Health Facility Reserved Land">Health Facility Reserved Land</SelectItem>
+                  <SelectItem value="Government Reserved Area">Government Reserved Area (GRA)</SelectItem>
+                  <SelectItem value="Recreational Land">Recreational / Park Land</SelectItem>
+                  <SelectItem value="Cemetery">Cemetery / Burial Ground</SelectItem>
+                  <SelectItem value="Road Reserve">Road / Transport Corridor Reserve</SelectItem>
+                  <SelectItem value="Water Resource Land">Water Resource Land (e.g., near dams, rivers)</SelectItem>
+                  <SelectItem value="Market Expansion Land">Market Expansion Land</SelectItem>
+                  <SelectItem value="Unallocated Government Land">Unallocated Government Land</SelectItem>
+                  <SelectItem value="Land with Disputes">Land with Disputes / Encumbrances</SelectItem>
+                  <SelectItem value="Leasehold Plot">Leasehold Plot</SelectItem>
+                  <SelectItem value="Public Infrastructure Land">Land for Public Infrastructure Projects</SelectItem>
+                  <SelectItem value="Buffer Zone">Buffer Zone / Right of Way</SelectItem>
+                  <SelectItem value="Tourism Development Plot">Tourism Development Plot</SelectItem>
+                  <SelectItem value="Relocation Plot">Relocation / Resettlement Plot</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="makeModel">Make & Model</Label>
-                <Input
-                  id="makeModel"
-                  name="makeModel"
-                  placeholder="e.g. Toyota Camry 2020"
-                  value={formData.makeModel || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="color">Color</Label>
-                <Input
-                  id="color"
-                  name="color"
-                  placeholder="e.g. Silver Metallic"
-                  value={formData.color || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="landCondition">Land Condition</Label>
+              <Select onValueChange={(value) => handleSelectChange("landCondition", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select land condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Excellent">Excellent</SelectItem>
+                  <SelectItem value="Good">Good</SelectItem>
+                  <SelectItem value="Fair">Fair</SelectItem>
+                  <SelectItem value="Poor">Poor</SelectItem>
+                  <SelectItem value="Needs Improvement">Needs Improvement</SelectItem>
+                  <SelectItem value="Under Development">Under Development</SelectItem>
+                  <SelectItem value="Abandoned">Abandoned</SelectItem>
+                  <SelectItem value="Contaminated">Contaminated</SelectItem>
+                  <SelectItem value="Eroded">Eroded</SelectItem>
+                  <SelectItem value="Flooded">Flooded</SelectItem>
+                  <SelectItem value="Overgrown">Overgrown</SelectItem>
+                  <SelectItem value="Under Construction">Under Construction</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="year">Year of Manufacture</Label>
-                <Input
-                  id="year"
-                  name="year"
-                  type="number"
-                  min="1900"
-                  max={new Date().getFullYear()}
-                  value={formData.year || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="seatingCapacity">Seating Capacity</Label>
-                <Input
-                  id="seatingCapacity"
-                  name="seatingCapacity"
-                  type="number"
-                  min="1"
-                  value={formData.seatingCapacity || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="plotNumber">Plot Number</Label>
+              <Input id="plotNumber" name="plotNumber" value={formData.plotNumber || ""} onChange={handleInputChange} />
             </div>
 
-            {/* --- Vehicle Identification --- */}
-            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Vehicle Identification</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="registrationNumber">Registration Number</Label>
-                <Input
-                  id="registrationNumber"
-                  name="registrationNumber"
-                  placeholder="e.g. ABC123XY"
-                  value={formData.registrationNumber || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="vin">Vehicle ID Number (VIN)</Label>
-                <Input
-                  id="vin"
-                  name="vin"
-                  placeholder="Enter VIN"
-                  value={formData.vin || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="layoutName">Layout Name/Scheme</Label>
+              <Select onValueChange={(value) => handleSelectChange("layoutName", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select layout/scheme" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="New GRA">New GRA</SelectItem>
+                  <SelectItem value="Old GRA">Old GRA</SelectItem>
+                  <SelectItem value="Federal Low-Cost Housing Scheme">Federal Low-Cost Housing Scheme</SelectItem>
+                  <SelectItem value="High-Level Layout">High-Level Layout</SelectItem>
+                  <SelectItem value="Low-Level Layout">Low-Level Layout</SelectItem>
+                  <SelectItem value="Wurukum Layout">Wurukum Layout</SelectItem>
+                  <SelectItem value="Modern Market Layout">Modern Market Layout</SelectItem>
+                  <SelectItem value="North Bank Layout">North Bank Layout</SelectItem>
+                  <SelectItem value="Nyiman Layout">Nyiman Layout</SelectItem>
+                  <SelectItem value="Apir Industrial Layout">Apir Industrial Layout</SelectItem>
+                  <SelectItem value="Welfare Quarters Layout">Welfare Quarters Layout</SelectItem>
+                  <SelectItem value="Staff Quarters Scheme">Staff Quarters Scheme</SelectItem>
+                  <SelectItem value="Education Board Housing Scheme">Education Board Housing Scheme</SelectItem>
+                  <SelectItem value="Police Barracks Layout">Police Barracks Layout</SelectItem>
+                  <SelectItem value="Army Barracks Layout">Army Barracks Layout</SelectItem>
+                  <SelectItem value="Custom Layout">Custom Layout</SelectItem>
+                  <SelectItem value="Industrial Layout">Industrial Layout</SelectItem>
+                  <SelectItem value="Agric Layout">Agric Layout</SelectItem>
+                  <SelectItem value="Judges Quarters Layout">Judges Quarters Layout</SelectItem>
+                  <SelectItem value="Mobile Police Quarters Layout">Mobile Police Quarters Layout</SelectItem>
+                  <SelectItem value="Government Reserved Area (GRA)">Government Reserved Area (GRA)</SelectItem>
+                  <SelectItem value="Makurdi International Market Layout">Makurdi International Market Layout</SelectItem>
+                  <SelectItem value="Private Developer Estate">Private Developer Estate</SelectItem>
+                  <SelectItem value="Unplanned Area / Informal Settlement">Unplanned Area / Informal Settlement</SelectItem>
+                  <SelectItem value="Other">Other (Specify)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="surveyPlanNumber">Survey Plan Number (Optional)</Label>
+              <Input id="surveyPlanNumber" name="surveyPlanNumber" value={formData.surveyPlanNumber || ""} onChange={handleInputChange} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="beaconNumbers">Beacon Numbers (Optional)</Label>
+              <Input id="beaconNumbers" name="beaconNumbers" value={formData.beaconNumbers || ""} onChange={handleInputChange} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="engineNumber">Engine Number</Label>
-                <Input
-                  id="engineNumber"
-                  name="engineNumber"
-                  placeholder="Enter engine number"
-                  value={formData.engineNumber || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="purchasePrice">Purchase Price</Label>
-                <Input
-                  id="purchasePrice"
-                  name="purchasePrice"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="Enter purchase price"
-                  value={formData.purchasePrice || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
+            {/* --- Title Information --- */}
+            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Title Information</h4>
+            <div className="space-y-2">
+              <Label htmlFor="titleType">Title Type</Label>
+              <Select onValueChange={(value) => handleSelectChange("titleType", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select title type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Certificate of Occupancy">Certificate of Occupancy (C of O)</SelectItem>
+                  <SelectItem value="Right of Occupancy">Right of Occupancy (R of O)</SelectItem>
+                  <SelectItem value="Deed of Assignment">Deed of Assignment</SelectItem>
+                  <SelectItem value="Deed of Conveyance">Deed of Conveyance</SelectItem>
+                  <SelectItem value="Freehold">Freehold</SelectItem>
+                  <SelectItem value="Customary Right of Occupancy">Customary Right of Occupancy</SelectItem>
+                  <SelectItem value="Gazette">Gazette</SelectItem>
+                  <SelectItem value="Excision">Excision</SelectItem>
+                  <SelectItem value="Allocation Letter">Allocation Letter</SelectItem>
+                  <SelectItem value="Government Lease">Government Lease</SelectItem>
+                  <SelectItem value="Unknown">Unknown / Unregistered</SelectItem>
+                  <SelectItem value="Other">Other (Specify)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* --- Technical Specifications --- */}
-            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Technical Specifications</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fuelType">Fuel Type</Label>
-                <Select onValueChange={(value) => handleSelectChange("fuelType", value)} value={formData.fuelType}>
-                  <SelectTrigger id="fuelType">
-                    <SelectValue placeholder="Select fuel type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="petrol">Petrol</SelectItem>
-                    <SelectItem value="diesel">Diesel</SelectItem>
-                    <SelectItem value="electric">Electric</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                    <SelectItem value="cng">CNG</SelectItem>
-                    <SelectItem value="lpg">LPG</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="transmission">Transmission</Label>
-                <Select onValueChange={(value) => handleSelectChange("transmission", value)} value={formData.transmission}>
-                  <SelectTrigger id="transmission">
-                    <SelectValue placeholder="Select transmission type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual">Manual</SelectItem>
-                    <SelectItem value="automatic">Automatic</SelectItem>
-                    <SelectItem value="cvt">CVT</SelectItem>
-                    <SelectItem value="semi-automatic">Semi-Automatic</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="titleReferenceNumber">Title Reference Number</Label>
+              <Input 
+                id="titleReferenceNumber" 
+                name="titleReferenceNumber" 
+                placeholder="e.g. BS/CERT/2345/2021"
+                value={formData.titleReferenceNumber || ""} 
+                onChange={handleInputChange} 
+              />
             </div>
 
+            {/* --- Physical Attributes --- */}
+            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Physical Attributes</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="mileage">Current Mileage</Label>
-                <Input
-                  id="mileage"
-                  name="mileage"
-                  type="number"
-                  min="0"
-                  placeholder="Enter current mileage"
-                  value={formData.mileage || ""}
-                  onChange={handleInputChange}
-                />
+                <Label htmlFor="landSize">Land Size</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="landSize"
+                    name="landSize"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.landSize || ""}
+                    onChange={handleInputChange}
+                  />
+                  <Select onValueChange={(value) => handleSelectChange("landSizeUnit", value)}>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sqm">Square Meters (sqm)</SelectItem>
+                      <SelectItem value="ha">Hectares (ha)</SelectItem>
+                      <SelectItem value="acres">Acres</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="vehicleCondition">Vehicle Condition</Label>
-                <Select onValueChange={(value) => handleSelectChange("vehicleCondition", value)}>
+                <Label htmlFor="shape">Shape</Label>
+                <Select onValueChange={(value) => handleSelectChange("shape", value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select condition" />
+                    <SelectValue placeholder="Select shape" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="excellent">Excellent</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
-                    <SelectItem value="needs_repair">Needs Repair</SelectItem>
+                    <SelectItem value="Rectangular">Rectangular</SelectItem>
+                    <SelectItem value="Square">Square</SelectItem>
+                    <SelectItem value="Irregular">Irregular</SelectItem>
+                    <SelectItem value="L-Shaped">L-Shaped</SelectItem>
+                    <SelectItem value="Trapezoidal">Trapezoidal</SelectItem>
+                    <SelectItem value="Triangular">Triangular</SelectItem>
+                    <SelectItem value="Circular">Circular</SelectItem>
+                    <SelectItem value="Other">Other (Specify)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* --- Maintenance & Service --- */}
-            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Maintenance & Service</h4>
+            <div className="space-y-2">
+              <Label htmlFor="topography">Topography</Label>
+              <Select onValueChange={(value) => handleSelectChange("topography", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select topography" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Flat">Flat</SelectItem>
+                  <SelectItem value="Sloping">Sloping</SelectItem>
+                  <SelectItem value="Hilly">Hilly</SelectItem>
+                  <SelectItem value="Rocky">Rocky</SelectItem>
+                  <SelectItem value="Flood-Prone">Flood-Prone</SelectItem>
+                  <SelectItem value="Swampy">Swampy</SelectItem>
+                  <SelectItem value="Undulating">Undulating</SelectItem>
+                  <SelectItem value="Valley">Valley</SelectItem>
+                  <SelectItem value="Plateau">Plateau</SelectItem>
+                  <SelectItem value="Mixed Terrain">Mixed Terrain</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* --- Use and Access --- */}
+            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Use and Access</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="lastServiceDate">Last Service Date</Label>
-                <Input
-                  id="lastServiceDate"
-                  name="lastServiceDate"
-                  type="date"
-                  value={formData.lastServiceDate || ""}
-                  onChange={handleInputChange}
-                />
+                <Label htmlFor="currentUse">Current Use</Label>
+                <Select onValueChange={(value) => handleSelectChange("currentUse", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select current use" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Vacant Land">Vacant Land</SelectItem>
+                    <SelectItem value="Residential Building">Residential Building</SelectItem>
+                    <SelectItem value="Commercial Activity">Commercial Activity</SelectItem>
+                    <SelectItem value="Farming">Farming</SelectItem>
+                    <SelectItem value="Industrial Operation">Industrial Operation</SelectItem>
+                    <SelectItem value="Market Use">Market Use</SelectItem>
+                    <SelectItem value="Educational Institution">Educational Institution</SelectItem>
+                    <SelectItem value="Worship Centre">Worship Centre</SelectItem>
+                    <SelectItem value="Public Utility">Public Utility</SelectItem>
+                    <SelectItem value="Squatter Settlement">Squatter Settlement</SelectItem>
+                    <SelectItem value="Encumbered">Encumbered / Disputed</SelectItem>
+                    <SelectItem value="Other">Other (Specify)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="nextServiceDue">Next Service Due</Label>
-                <Input
-                  id="nextServiceDue"
-                  name="nextServiceDue"
-                  type="date"
-                  value={formData.nextServiceDue || ""}
-                  onChange={handleInputChange}
-                />
+                <Label htmlFor="proposedUse">Proposed Use</Label>
+                <Select onValueChange={(value) => handleSelectChange("proposedUse", value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select proposed use" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Residential">Residential</SelectItem>
+                    <SelectItem value="Commercial">Commercial</SelectItem>
+                    <SelectItem value="Industrial">Industrial</SelectItem>
+                    <SelectItem value="Agricultural">Agricultural</SelectItem>
+                    <SelectItem value="Institutional">Institutional</SelectItem>
+                    <SelectItem value="Recreational">Recreational</SelectItem>
+                    <SelectItem value="Mixed-Use">Mixed-Use</SelectItem>
+                    <SelectItem value="Public Utility">Public Utility</SelectItem>
+                    <SelectItem value="Transportation">Transportation</SelectItem>
+                    <SelectItem value="Tourism">Tourism</SelectItem>
+                    <SelectItem value="Undeclared">Undeclared</SelectItem>
+                    <SelectItem value="Other">Other (Specify)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* --- Insurance Details --- */}
-            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Insurance Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="insuranceProvider">Insurance Provider</Label>
-                <Input
-                  id="insuranceProvider"
-                  name="insuranceProvider"
-                  placeholder="Enter insurance provider"
-                  value={formData.insuranceProvider || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="insurancePolicyNumber">Policy Number</Label>
-                <Input
-                  id="insurancePolicyNumber"
-                  name="insurancePolicyNumber"
-                  placeholder="Enter policy number"
-                  value={formData.insurancePolicyNumber || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
             <div className="space-y-2">
-              <Label htmlFor="insuranceExpiryDate">Insurance Expiry Date</Label>
-              <Input
-                id="insuranceExpiryDate"
-                name="insuranceExpiryDate"
-                type="date"
-                value={formData.insuranceExpiryDate || ""}
-                onChange={handleInputChange}
-              />
+              <Label htmlFor="roadAccess">Road Access</Label>
+              <Select onValueChange={(value) => handleSelectChange("roadAccess", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select road access" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Tarred Road">Tarred Road</SelectItem>
+                  <SelectItem value="Untarred Road">Untarred Road</SelectItem>
+                  <SelectItem value="Paved Access Road">Paved Access Road</SelectItem>
+                  <SelectItem value="Earth Road">Earth Road</SelectItem>
+                  <SelectItem value="No Direct Access">No Direct Access</SelectItem>
+                  <SelectItem value="Pedestrian Path Only">Pedestrian Path Only</SelectItem>
+                  <SelectItem value="Proposed Road">Proposed Road (On Plan)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* --- Assignment & Location --- */}
-            <h4 className="text-md font-semibold mt-4 mb-2 text-gray-700 md:col-span-2">Assignment & Location</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="assignedDepartment">Assigned Department</Label>
-                <Input
-                  id="assignedDepartment"
-                  name="assignedDepartment"
-                  placeholder="Enter assigned department"
-                  value={formData.assignedDepartment || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="assignedDriver">Assigned Driver</Label>
-                <Input
-                  id="assignedDriver"
-                  name="assignedDriver"
-                  placeholder="Enter assigned driver"
-                  value={formData.assignedDriver || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
             <div className="space-y-2">
-              <Label htmlFor="parkingLocation">Regular Parking Location</Label>
-              <Input
-                id="parkingLocation"
-                name="parkingLocation"
-                placeholder="Enter regular parking location"
-                value={formData.parkingLocation || ""}
-                onChange={handleInputChange}
-              />
+              <Label htmlFor="zoningClassification">Zoning Classification</Label>
+              <Select onValueChange={(value) => handleSelectChange("zoningClassification", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select zoning classification" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Residential Zone">Residential Zone</SelectItem>
+                  <SelectItem value="Commercial Zone">Commercial Zone</SelectItem>
+                  <SelectItem value="Industrial Zone">Industrial Zone</SelectItem>
+                  <SelectItem value="Agricultural Zone">Agricultural Zone</SelectItem>
+                  <SelectItem value="Mixed-Use Zone">Mixed-Use Zone</SelectItem>
+                  <SelectItem value="Institutional Zone">Institutional Zone</SelectItem>
+                  <SelectItem value="Conservation Zone">Conservation / Green Zone</SelectItem>
+                  <SelectItem value="Utility Zone">Utility / Infrastructure Zone</SelectItem>
+                  <SelectItem value="Undefined">Undefined / Unzoned</SelectItem>
+                  <SelectItem value="Other">Other (Specify)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </>
         )
@@ -1212,6 +1317,16 @@ console.log(formData.propertyImages)
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
+                <Label htmlFor="registrationNumber">Registration Number</Label>
+                <Input
+                  id="registrationNumber"
+                  name="registrationNumber"
+                  placeholder="e.g. BEN 123 ABC"
+                  value={formData.registrationNumber || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="year">Year of Manufacture</Label>
                 <Input
                   id="year"
@@ -1220,17 +1335,6 @@ console.log(formData.propertyImages)
                   min="1900"
                   max={new Date().getFullYear()}
                   value={formData.year || ""}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="seatingCapacity">Seating Capacity</Label>
-                <Input
-                  id="seatingCapacity"
-                  name="seatingCapacity"
-                  type="number"
-                  min="1"
-                  value={formData.seatingCapacity || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -1281,6 +1385,16 @@ console.log(formData.propertyImages)
                   min="0"
                   placeholder="Enter current mileage"
                   value={formData.mileage || ""}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="color">Color</Label>
+                <Input
+                  id="color"
+                  name="color"
+                  placeholder="Enter vehicle color"
+                  value={formData.color || ""}
                   onChange={handleInputChange}
                 />
               </div>
@@ -1601,42 +1715,189 @@ console.log(formData.propertyImages)
             </div>
           </>
         )
+      case "others":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="otherPropertySubtype">Equipment/Infrastructure Type</Label>
+              <Select onValueChange={(value) => handleSelectChange("otherPropertySubtype", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select equipment/infrastructure type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(equipmentAndInfrastructureTypes).map(([category, types]) => (
+                    <SelectGroup key={category}>
+                      <SelectLabel>{category}</SelectLabel>
+                      {types.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.otherPropertySubtype && (
+              <div className="space-y-4 mt-4">
+                {/* Common Fields for All Types */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="facilityCapacity">Capacity/Specifications</Label>
+                    <Input
+                      id="facilityCapacity"
+                      name="facilityCapacity"
+                      placeholder="Enter capacity or specifications"
+                      value={formData.facilityCapacity || ""}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="facilityStatus">Status</Label>
+                    <Select onValueChange={(value) => handleSelectChange("facilityStatus", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="operational">Operational</SelectItem>
+                        <SelectItem value="under_maintenance">Under Maintenance</SelectItem>
+                        <SelectItem value="under_repair">Under Repair</SelectItem>
+                        <SelectItem value="temporarily_closed">Temporarily Closed</SelectItem>
+                        <SelectItem value="decommissioned">Decommissioned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Features/Contents Section */}
+                <div className="pt-6 mt-6 border-t border-gray-200">
+                  <h4 className="text-md font-semibold mb-4 text-gray-700">Features/Contents</h4>
+                  
+                  {/* Display Added Features */}
+                  {formData.equipmentList && formData.equipmentList.length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      {formData.equipmentList.map((equipment, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                          <span className="text-sm text-gray-800">
+                            {equipment.name}: {equipment.quantity} ({equipment.condition})
+                          </span>
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-red-500 hover:text-red-700 h-6 px-2"
+                            onClick={() => {
+                              const newList = [...formData.equipmentList!];
+                              newList.splice(index, 1);
+                              setFormData(prev => ({
+                                ...prev,
+                                equipmentList: newList
+                              }));
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Input for Adding New Feature */}
+                  <div className="flex items-end gap-3">
+                    <div className="flex-grow space-y-1">
+                      <Label htmlFor="feature-name" className="text-xs">Feature Name</Label>
+                      <Input
+                        id="feature-name"
+                        placeholder="e.g., Server Model, Generator Type"
+                        value={newFeatureName}
+                        onChange={handleFeatureNameChange}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="w-24 space-y-1">
+                      <Label htmlFor="feature-quantity" className="text-xs">Quantity</Label>
+                      <Input
+                        id="feature-quantity"
+                        type="number"
+                        min="1"
+                        value={newFeatureQuantity}
+                        onChange={handleFeatureQuantityChange}
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="w-32 space-y-1">
+                      <Label htmlFor="feature-condition" className="text-xs">Condition</Label>
+                      <Select value={newFeatureCondition} onValueChange={handleFeatureConditionChange}>
+                        <SelectTrigger id="feature-condition" className="h-9">
+                          <SelectValue placeholder="Select..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="New">New</SelectItem>
+                          <SelectItem value="Good">Good</SelectItem>
+                          <SelectItem value="Fair">Fair</SelectItem>
+                          <SelectItem value="Poor">Poor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={handleAddFeature} 
+                      className="h-9"
+                      disabled={!newFeatureName.trim() || !newFeatureQuantity.trim() || !newFeatureCondition}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Add
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Maintenance Schedule */}
+                <div className="mt-6 space-y-4">
+                  <h5 className="text-sm font-medium text-gray-700">Maintenance Schedule</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="lastInspectionDate">Last Inspection Date</Label>
+                      <Input
+                        id="lastInspectionDate"
+                        name="lastInspectionDate"
+                        type="date"
+                        value={formData.lastInspectionDate || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nextInspectionDate">Next Inspection Date</Label>
+                      <Input
+                        id="nextInspectionDate"
+                        name="nextInspectionDate"
+                        type="date"
+                        value={formData.nextInspectionDate || ""}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Notes */}
+                <div className="mt-6 space-y-2">
+                  <Label htmlFor="facilityFeatures">Additional Notes</Label>
+                  <Textarea
+                    id="facilityFeatures"
+                    name="facilityFeatures"
+                    placeholder="Add any additional details about the equipment or infrastructure"
+                    value={formData.facilityFeatures || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )
       default:
         return null
     }
   }
 
-  // const detectLocation = () => {
-  //   setIsDetectingLocation(true)
-  //   setLocationError(null)
-
-  //   if (!navigator.geolocation) {
-  //     setLocationError("Geolocation is not supported by your browser")
-  //     setIsDetectingLocation(false)
-  //     return
-  //   }
-
-  //   navigator.geolocation.getCurrentPosition(
-  //     (position) => {
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         latitude: position.coords.latitude.toString(),
-  //         longitude: position.coords.longitude.toString(),
-  //       }))
-  //       setIsDetectingLocation(false)
-  //     },
-  //     (error) => {
-  //       console.error("Error getting location:", error)
-  //       setLocationError("Unable to detect your location. Please enter coordinates manually.")
-  //       setIsDetectingLocation(false)
-  //     },
-  //     {
-  //       enableHighAccuracy: true,
-  //       timeout: 5000,
-  //       maximumAge: 0,
-  //     }
-  //   )
-  // }
+ 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
@@ -1791,12 +2052,11 @@ console.log(formData.propertyImages)
               <Button variant="outline" disabled>
                 Back
               </Button>
-              {/* <Button onClick={() => setStep(step + 1)} disabled={!formData.propertyType || !formData.propertyName || !formData.description  || !formData.acquisitionDate || !formData.estimatedValue || !formData.buildingType || !formData.buildingCondition} className="bg-primary hover:bg-primary/90">
-                Continue
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button> */}
-
-<Button onClick={() => setStep(step + 1)} disabled={!formData.propertyType   } className="bg-primary hover:bg-primary/90">
+              <Button 
+                onClick={() => setStep(step + 1)} 
+                disabled={!validateStep(1, formData, propertyPhotos)} 
+                className="bg-primary hover:bg-primary/90"
+              >
                 Continue
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -1815,65 +2075,37 @@ console.log(formData.propertyImages)
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="state">State</Label>
-                  <Select onValueChange={(value) => handleSelectChange("state", value)}>
+                  <Select onValueChange={(value) => {
+                    handleSelectChange("state", value);
+                    // Reset LGA when state changes
+                    setFormData(prev => ({ ...prev, lga: "" }));
+                  }}>
                     <SelectTrigger id="state">
                       <SelectValue placeholder="Select state" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fct">Federal Capital Territory</SelectItem>
-                      <SelectItem value="abia">Abia</SelectItem>
-                      <SelectItem value="adamawa">Adamawa</SelectItem>
-                      <SelectItem value="akwa-ibom">Akwa Ibom</SelectItem>
-                      <SelectItem value="anambra">Anambra</SelectItem>
-                      <SelectItem value="bauchi">Bauchi</SelectItem>
-                      <SelectItem value="bayelsa">Bayelsa</SelectItem>
-                      <SelectItem value="benue">Benue</SelectItem>
-                      <SelectItem value="borno">Borno</SelectItem>
-                      <SelectItem value="cross-river">Cross River</SelectItem>
-                      <SelectItem value="delta">Delta</SelectItem>
-                      <SelectItem value="ebonyi">Ebonyi</SelectItem>
-                      <SelectItem value="edo">Edo</SelectItem>
-                      <SelectItem value="ekiti">Ekiti</SelectItem>
-                      <SelectItem value="enugu">Enugu</SelectItem>
-                      <SelectItem value="gombe">Gombe</SelectItem>
-                      <SelectItem value="imo">Imo</SelectItem>
-                      <SelectItem value="jigawa">Jigawa</SelectItem>
-                      <SelectItem value="kaduna">Kaduna</SelectItem>
-                      <SelectItem value="kano">Kano</SelectItem>
-                      <SelectItem value="katsina">Katsina</SelectItem>
-                      <SelectItem value="kebbi">Kebbi</SelectItem>
-                      <SelectItem value="kogi">Kogi</SelectItem>
-                      <SelectItem value="kwara">Kwara</SelectItem>
-                      <SelectItem value="lagos">Lagos</SelectItem>
-                      <SelectItem value="nasarawa">Nasarawa</SelectItem>
-                      <SelectItem value="niger">Niger</SelectItem>
-                      <SelectItem value="ogun">Ogun</SelectItem>
-                      <SelectItem value="ondo">Ondo</SelectItem>
-                      <SelectItem value="osun">Osun</SelectItem>
-                      <SelectItem value="oyo">Oyo</SelectItem>
-                      <SelectItem value="plateau">Plateau</SelectItem>
-                      <SelectItem value="rivers">Rivers</SelectItem>
-                      <SelectItem value="sokoto">Sokoto</SelectItem>
-                      <SelectItem value="taraba">Taraba</SelectItem>
-                      <SelectItem value="yobe">Yobe</SelectItem>
-                      <SelectItem value="zamfara">Zamfara</SelectItem>
+                      {Object.keys(stateLGAs).map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {state.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div style={{display:"none"}} className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="lga">Local Government Area</Label>
-                  <Select onValueChange={(value) => handleSelectChange("lga", value)}>
+                  <Select 
+                    onValueChange={(value) => handleSelectChange("lga", value)}
+                    disabled={!formData.state}
+                  >
                     <SelectTrigger id="lga">
                       <SelectValue placeholder="Select LGA" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="abaji">Abaji</SelectItem>
-                      <SelectItem value="bwari">Bwari</SelectItem>
-                      <SelectItem value="gwagwalada">Gwagwalada</SelectItem>
-                      <SelectItem value="kuje">Kuje</SelectItem>
-                      <SelectItem value="kwali">Kwali</SelectItem>
-                      <SelectItem value="municipal">Municipal</SelectItem>
+                      {formData.state && stateLGAs[formData.state]?.map((lga) => (
+                        <SelectItem key={lga} value={lga}>{lga}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1948,7 +2180,10 @@ console.log(formData.propertyImages)
               <Button variant="outline" onClick={() => setStep(step - 1)}>
                 Back
               </Button>
-              <Button onClick={() => setStep(step + 1)} disabled={!formData.state || !formData.address}>
+              <Button 
+                onClick={() => setStep(step + 1)} 
+                disabled={!validateStep(2, formData, propertyPhotos)}
+              >
                 Continue
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -2012,11 +2247,20 @@ console.log(formData.propertyImages)
             </div>}
                     <div  className="flex flex-row space-x-4 mt-4 w-full overflow-x-scroll whitespace-nowrap bg-gray-100 p-4 scroll-smooth">
                       {propertyDeeds?.map((image, index) => (
-                        <iframe
-                        key={index}
-                        src={image}
-                        className="w-500 h-500"
-                      ></iframe>
+                        <div key={index} className="relative">
+                          <iframe
+                            src={image}
+                            className="w-500 h-500"
+                          ></iframe>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 bg-red-500/80 hover:bg-red-500 text-white"
+                            onClick={() => handleRemoveDeed(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       ))}
                     </div>
 
@@ -2063,8 +2307,25 @@ console.log(formData.propertyImages)
             </div>}
                     <div  className="flex flex-row space-x-4 mt-4 w-full overflow-x-scroll whitespace-nowrap bg-gray-100 p-4 scroll-smooth">
                       {propertyPhotos?.map((image, index) => (
-                 <img key={index} className="w-72 h-62 object-contain"  src={image}  style={{ maxHeight:200,maxWidth:200, borderRadius:5,borderWidth:0.9,borderColor:"#000"}} alt={`Property Deed ${index + 1}`} height={200} width={200} />
-
+                        <div key={index} className="relative">
+                          <img 
+                            className="w-72 h-62 object-contain" 
+                            src={image} 
+                            style={{ maxHeight:200, maxWidth:200, borderRadius:5, borderWidth:0.9, borderColor:"#000"}} 
+                            alt={`Property Image ${index + 1}`} 
+                            height={200} 
+                            width={200} 
+                          />
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 bg-red-500/80 hover:bg-red-500 text-white"
+                            onClick={() => handleRemovePhoto(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -2107,7 +2368,10 @@ console.log(formData.propertyImages)
               <Button variant="outline" onClick={() => setStep(step - 1)}>
                 Back
               </Button>
-              <Button disabled={propertyPhotos.length < 3 } onClick={() => setStep(step + 1)}>
+              <Button 
+                disabled={!validateStep(3, formData, propertyPhotos)} 
+                onClick={() => setStep(step + 1)}
+              >
                 Continue
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
@@ -2205,7 +2469,11 @@ console.log(formData.propertyImages)
               <Button variant="outline" onClick={() => setStep(step - 1)}>
                 Back
               </Button>
-              <Button type="submit" disabled={!formData.confirmed || isLoading} className="bg-primary hover:bg-primary/90">
+              <Button 
+                type="submit" 
+                disabled={!validateStep(4, formData, propertyPhotos) || isLoading} 
+                className="bg-primary hover:bg-primary/90"
+              >
                 {isLoading ? "Submitting..." : "Complete Registration"}
                 <Check className="ml-2 h-4 w-4" />
               </Button>

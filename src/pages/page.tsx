@@ -17,10 +17,14 @@ import Map from "./map"
 import axios from "axios"
 import { hasPermissions,canRegisterProperty} from "@/lib/permissions"
 import { Role } from "@/types"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+
 export default function GovPropertyPortal() {
   const [role,setRole]=useState("")
   const [userRole, setUserRole] = useState<string | null>(null)
   const [permissions, setPermissions] = useState<Role[]>([])
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const isLoginPage = location.pathname === "/admin/securelogin/login/"
@@ -32,14 +36,17 @@ export default function GovPropertyPortal() {
         const users = localStorage.getItem("userData")
         if (!users) {
           console.error("No user data found")
+          navigate("/admin/securelogin/login/")
           return
         }
         const userData = JSON.parse(users)
         if (!userData.role) {
           console.error("No role found in user data")
+          navigate("/admin/securelogin/login/")
           return
         }
         setUserRole(userData.role)
+        setRole(userData.role)
         
         await axios.get("https://bdicisp.onrender.com/api/v1/roles", {
           headers: {
@@ -54,19 +61,11 @@ export default function GovPropertyPortal() {
         })
       } catch (error) {
         console.error("Failed to fetch user role:", error)
+        navigate("/admin/securelogin/login/")
       }
     }
     fetchUserRole()
-  }, [])
-  useEffect(() => {
-    const userData = localStorage.getItem('userData');
-    let user = userData ? JSON.parse(userData) : null;
-    //let user = JSON.parse(localStorage.getItem('userData'));
-    console.log(user); // Check if it's an object
-    console.log(user?.role); // Check if role exists
-    setRole(user?.role)
-
-  }, [])
+  }, [navigate])
 
   if (isLoginPage) {
     return (
@@ -90,6 +89,12 @@ export default function GovPropertyPortal() {
       </ThemeProvider>
     )
   }
+  const handleLogout = () => {
+    localStorage.removeItem("authToken")
+    localStorage.removeItem("userData")
+    setIsLogoutDialogOpen(false)
+    navigate("/admin/securelogin/login/")
+  }
  
   return (
     <ThemeProvider>
@@ -110,7 +115,7 @@ export default function GovPropertyPortal() {
               </div>
               <button
                 className="bg-primary-foreground/10 hover:bg-primary-foreground/20 px-3 py-1 rounded text-sm"
-                onClick={() => navigate("/")}
+                onClick={() => setIsLogoutDialogOpen(true)}
               >
                 Logout
               </button>
@@ -191,6 +196,26 @@ export default function GovPropertyPortal() {
            
           </div>
         </footer>
+
+        {/* Logout Confirmation Dialog */}
+        <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Logout</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              Are you sure you want to logout?
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsLogoutDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleLogout}>
+                Logout
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ThemeProvider>
   )

@@ -73,6 +73,7 @@ interface Property {
   yearBuilt?: number
   buildingCondition?: string
   currentBuildingUse?: string
+  currentUse:String
 
   // Vehicle properties
   vehicleType?: string
@@ -459,7 +460,7 @@ export default function PropertyView() {
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-500">Current Use</Label>
-                <p className="text-sm">{property.landUse ? property.landUse.charAt(0).toUpperCase() + property.landUse.slice(1) : "N/A"}</p>
+                <p className="text-sm">{property.currentUse ? property.currentUse.charAt(0).toUpperCase() + property.currentUse.slice(1) : "N/A"}</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-500">Plot Number</Label>
@@ -552,6 +553,7 @@ export default function PropertyView() {
                 <Label className="text-sm font-medium text-gray-500">Acquisition Date</Label>
                 <p className="text-sm">{property.acquisitionDate ? new Date(property.acquisitionDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }) : "N/A"}</p>
               </div>
+              
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-500">State</Label>
                 <p className="text-sm">{property.state ? property.state.charAt(0).toUpperCase() + property.state.slice(1) : "N/A"}</p>
@@ -714,6 +716,15 @@ export default function PropertyView() {
                    <span className="font-medium text-gray-600">Acquisition Date:</span>
                    <p className="text-gray-800">
                      {property.acquisitionDate ? new Date(property.acquisitionDate).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }) : "N/A"}
+                   </p>
+                 </div>
+               </div>
+               <div className="flex items-start space-x-2">
+                 <Calendar className="h-4 w-4 mt-0.5 text-gray-500 flex-shrink-0" />
+                 <div>
+                   <span className="font-medium text-gray-600">LGA:</span>
+                   <p className="text-gray-800">
+                     {property.lga ? property.lga.charAt(0).toUpperCase() + property.lga.slice(1) : "N/A"}
                    </p>
                  </div>
                </div>

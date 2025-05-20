@@ -77,9 +77,9 @@ export default function Database() {
 
   const handleExport = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("authToken")
       if (!token) {
-        navigate("/login")
+        navigate("/admin/securelogin/login/")
         return
       }
 
@@ -232,7 +232,7 @@ export default function Database() {
                       <tr key={property._id} className="border-b hover:bg-gray-50">
                         <td className="p-3 font-medium">{property.propertyId ?? property._id }</td>
                         <td className="p-3">
-                          <div className="w-30 h-20 bg-gray-200 rounded flex items-center justify-center">
+                          <div className="w-25 h-20 bg-gray-200 rounded flex items-center justify-center">
                             {property.propertyImages ? (
                               <img 
                                 src={property?.propertyImages?.[0]}

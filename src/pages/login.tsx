@@ -41,9 +41,15 @@ export default function Login() {
         localStorage.setItem("authToken", response.data.token)
 
         // Store user data if needed
-        localStorage.setItem("userData", JSON.stringify(response.data.data))
+        const userData = response.data.data
+        if (!userData || !userData.role) {
+          setError("Invalid user data received")
+          return navigate("/admin/securelogin/login/")
+        }
+        localStorage.setItem("userData", JSON.stringify(userData))
+        
         // Navigate to dashboard
-        navigate("/dashboard")
+        navigate("/dashboard", { replace: true })
       } else {
         setError("Invalid response from server")
       }

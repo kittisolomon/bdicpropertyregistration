@@ -187,7 +187,20 @@ export default function Dashboard() {
       console.error("Failed to fetch user role:", error)
     }
   }
+
+  const checkAuthExpired = async () => {
+    const token = localStorage.getItem("authToken")
+    if(!token) return alert("you don login?")
+    const response = await axios.post("https://bdicisp.onrender.com/api/v1/auth/check-auth-expired",{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    alert(response.data)
+  }
   useEffect(() => {
+    const token = localStorage.getItem("authToken")
+    if(!token) return navigate("/admin/securelogin/login/")
     Promise.all([
       fetchPropertyStats(),
       fetchProperties(),
@@ -268,7 +281,7 @@ export default function Dashboard() {
   const generateReport = async (docType: "pdf" | "excel") => {
     try {
       setIsGeneratingReport(true)
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("authToken")
       const response = await axios.get(
         `https://bdicisp.onrender.com/api/v1/reports/properties?format=${docType}`,
         {
@@ -281,7 +294,7 @@ export default function Dashboard() {
 
       // Create a blob from the response data
       const blob = new Blob([response.data], { 
-        type: docType === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+        type: docType === "pdf" ? "application/pdf" : "application/vnd.ms-excel" 
       })
        
       // Create a URL for the blob
@@ -290,7 +303,7 @@ export default function Dashboard() {
       // Create a temporary link element
       const link = document.createElement("a")
       link.href = url
-      link.download = `property-report-${new Date().toISOString().split("T")[0]}.${docType}`
+      link.download = `property-report-${new Date().toISOString().split("T")[0]}.${docType === "excel" ? "xls" : "pdf"}`
        
       // Append the link to the document
       document.body.appendChild(link)

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectGroup,SelectLabel,  SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import axios from "axios"
+import { vehicleTypes } from "@/lib/constants"
 
 interface Property {
   _id: string
@@ -808,22 +809,24 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                 <div className="space-y-2">
                   <Label htmlFor="vehicleType">Vehicle Type</Label>
                   <Select
-                    value={formData.vehicleType}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, vehicleType: value }))
-                    }
+                   onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, vehicleType: value }))
+                  }
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select vehicle type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SUV">SUV</SelectItem>
-                      <SelectItem value="Sedan">Sedan</SelectItem>
-                      <SelectItem value="Truck">Truck</SelectItem>
-                      <SelectItem value="Bus">Bus</SelectItem>
-                      <SelectItem value="Van">Van</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select vehicle type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(vehicleTypes).map(([category, types]: [string, string[]]) => (
+                      <SelectGroup key={category}>
+                        <SelectLabel>{category.toUpperCase()}</SelectLabel>
+                        {types.map((type: string) => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
                 </div>
 
                 <div className="space-y-2">
