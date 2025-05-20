@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
 
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectGroup,SelectLabel,  SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -35,6 +36,8 @@ interface Property {
   state: string
   lga: string
   address: string
+  longitude: string
+  latitude: string
   coordinates: {
     latitude: string
     longitude: string
@@ -90,57 +93,76 @@ const NIGERIAN_STATES = [
   "Niger", "Ogun", "Ondo", "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara"
 ]
 
-interface FormData {
+type BaseData = {
   propertyType: string
   propertyName: string
   propertyId: string
-  estimatedValue: number
+  description: string
   acquisitionDate: string
+  estimatedValue: number
   status: string
   state: string
   lga: string
   address: string
+  longitude: string
+  latitude: string
   coordinates: {
     latitude: string
     longitude: string
   }
-  description: string
-  landType: string
-  landSize: number
-  landCondition: string
-  landUse: string
-  titleType: string
-  titleReferenceNumber: string
-  surveyPlanNumber: string
-  beaconNumbers: string
-  landSizeUnit: string
-  vehicleType: string
-  makeModel: string
-  year: number
-  vin: string
-  engineNumber: string
-  vehicleCondition: string
-  color: string
-  seatingCapacity: string
-  purchasePrice: string
-  fuelType: string
-  transmission: string
-  mileage: string
-  lastServiceDate: string
-  nextServiceDue: string
-  insuranceProvider: string
-  insurancePolicyNumber: string
-  insuranceExpiryDate: string
-  assignedDriver: string
-  assignedDepartment: string
-  parkingLocation: string
-  buildingType: string
-  floorCount: number
-  totalArea: number
-  yearBuilt: number
-  currentBuildingUse: string
-  buildingCondition: string
-  buildingFeatures: string[]
+  registeredBy?: string
+  // House specific fields
+  buildingType?: string
+  floorCount?: number
+  totalArea?: number
+  yearBuilt?: number
+  currentBuildingUse?: string
+  buildingCondition?: string
+  buildingFeatures?: string[]
+  // Land specific fields
+  landType?: string
+  landSize?: number
+  landSizeUnit?: string
+  landCondition?: string
+  landUse?: string
+  plotNumber?: string
+  blockNumber?: string
+  layoutName?: string
+  surveyPlanNumber?: string
+  beaconNumbers?: string
+  perimeter?: string
+  shape?: string
+  topography?: string
+  zoningClassification?: string
+  titleType?: string
+  titleReferenceNumber?: string
+  easements?: string
+  roadAccess?: string
+  utilityAccess?: string[]
+  proposedUse?: string
+  currentUse?: string
+  // Vehicle specific fields
+  vehicleType?: string
+  makeModel?: string
+  year?: number
+  registrationNumber?: string
+  vin?: string
+  engineNumber?: string
+  vehicleCondition?: string
+  color?: string
+  seatingCapacity?: string
+  purchasePrice?: string
+  fuelType?: string
+  transmission?: string
+  mileage?: string
+  lastServiceDate?: string
+  nextServiceDue?: string
+  insuranceProvider?: string
+  insurancePolicyNumber?: string
+  insuranceExpiryDate?: string
+  assignedDriver?: string
+  assignedDepartment?: string
+  parkingLocation?: string
   // Institution specific fields
   institutionType?: string
   institutionLevel?: string
@@ -159,7 +181,146 @@ interface FormData {
   institutionCondition?: string
   institutionStatus?: string
   institutionFeatures?: string
+  // Petroleum specific fields
+  facilityType?: string
+  facilityCapacity?: string
+  facilityStatus?: string
+  totalTanks?: string
+  totalPumps?: string
+  totalDispensers?: string
+  totalStorage?: string
+  fuelTypes?: string[]
+  safetyCertification?: string
+  lastInspectionDate?: string
+  nextInspectionDate?: string
+  facilityCondition?: string
+  facilityFeatures?: string
+  tankCapacities?: { type: string; capacity: string; unit: string }[]
+  pumpTypes?: { type: string; count: string }[]
+  safetyEquipment?: { name: string; quantity: string; lastInspection: string }[]
+  // Other property specific fields
+  otherPropertySubtype?: string
+  totalRooms?: string
+  totalBeds?: string
+  operatingHours?: string
+  maintenanceSchedule?: string
+  equipmentList?: { name: string; quantity: string; condition: string }[]
+  infrastructureDetails?: { type: string; specifications: string; status: string }[]
+}
+
+interface FormData {
+  propertyType: string
+  propertyName: string
+  propertyId: string
+  estimatedValue: number
+  acquisitionDate: string
+  status: string
+  state: string
+  lga: string
+  longitude: string
+  latitude: string  
+  address: string
+  coordinates: {
+    latitude: string
+    longitude: string
+  }
+  description: string
   registeredBy?: string
+  // House specific fields
+  buildingType?: string
+  floorCount?: number
+  totalArea?: number
+  yearBuilt?: number
+  currentBuildingUse?: string
+  buildingCondition?: string
+  buildingFeatures?: string[]
+  // Land specific fields
+  landType?: string
+  landSize?: number
+  landSizeUnit?: string
+  landCondition?: string
+  landUse?: string
+  plotNumber?: string
+  blockNumber?: string
+  layoutName?: string
+  surveyPlanNumber?: string
+  beaconNumbers?: string
+  perimeter?: string
+  shape?: string
+  topography?: string
+  zoningClassification?: string
+  titleType?: string
+  titleReferenceNumber?: string
+  easements?: string
+  roadAccess?: string
+  utilityAccess?: string[]
+  proposedUse?: string
+  currentUse?: string
+  // Vehicle specific fields
+  vehicleType?: string
+  makeModel?: string
+  year?: number
+  registrationNumber?: string
+  vin?: string
+  engineNumber?: string
+  vehicleCondition?: string
+  color?: string
+  seatingCapacity?: string
+  purchasePrice?: string
+  fuelType?: string
+  transmission?: string
+  mileage?: string
+  lastServiceDate?: string
+  nextServiceDue?: string
+  insuranceProvider?: string
+  insurancePolicyNumber?: string
+  insuranceExpiryDate?: string
+  assignedDriver?: string
+  assignedDepartment?: string
+  parkingLocation?: string
+  // Institution specific fields
+  institutionType?: string
+  institutionLevel?: string
+  institutionName?: string
+  yearEstablished?: string
+  totalStudents?: string
+  totalStaff?: string
+  totalClassrooms?: string
+  totalLaboratories?: string
+  totalOffices?: string
+  totalToilets?: string
+  totalHostels?: string
+  totalLibraries?: string
+  totalAuditoriums?: string
+  totalSportsFacilities?: string
+  institutionCondition?: string
+  institutionStatus?: string
+  institutionFeatures?: string
+  // Petroleum specific fields
+  facilityType?: string
+  facilityCapacity?: string
+  facilityStatus?: string
+  totalTanks?: string
+  totalPumps?: string
+  totalDispensers?: string
+  totalStorage?: string
+  fuelTypes?: string[]
+  safetyCertification?: string
+  lastInspectionDate?: string
+  nextInspectionDate?: string
+  facilityCondition?: string
+  facilityFeatures?: string
+  tankCapacities?: { type: string; capacity: string; unit: string }[]
+  pumpTypes?: { type: string; count: string }[]
+  safetyEquipment?: { name: string; quantity: string; lastInspection: string }[]
+  // Other property specific fields
+  otherPropertySubtype?: string
+  totalRooms?: string
+  totalBeds?: string
+  operatingHours?: string
+  maintenanceSchedule?: string
+  equipmentList?: { name: string; quantity: string; condition: string }[]
+  infrastructureDetails?: { type: string; specifications: string; status: string }[]
 }
 
 export default function PropertyEdit() {
@@ -178,66 +339,104 @@ export default function PropertyEdit() {
     state: "",
     lga: "",
     address: "",
+    longitude: "",
+    latitude: "",
     coordinates: {
       latitude: "",
       longitude: "",
     },
     description: "",
-    landType: "",
-    landSize: 0,
-    landCondition: "",
-    landUse: "",
-    titleType: "",
-    titleReferenceNumber: "",
-    surveyPlanNumber: "",
-    beaconNumbers: "",
-    landSizeUnit: "hectares",
-    vehicleType: "",
-    makeModel: "",
-    year: 0,
-    vin: "",
-    engineNumber: "",
-    vehicleCondition: "",
-    color: "",
-    seatingCapacity: "",
-    purchasePrice: "",
-    fuelType: "",
-    transmission: "",
-    mileage: "",
-    lastServiceDate: "",
-    nextServiceDue: "",
-    insuranceProvider: "",
-    insurancePolicyNumber: "",
-    insuranceExpiryDate: "",
-    assignedDriver: "",
-    assignedDepartment: "",
-    parkingLocation: "",
-    buildingType: "",
-    floorCount: 0,
-    totalArea: 0,
-    yearBuilt: 0,
-    currentBuildingUse: "",
-    buildingCondition: "",
-    buildingFeatures: [],
-    // Institution specific fields
-    institutionType: "",
-    institutionLevel: "",
-    institutionName: "",
-    yearEstablished: "",
-    totalStudents: "",
-    totalStaff: "",
-    totalClassrooms: "",
-    totalLaboratories: "",
-    totalOffices: "",
-    totalToilets: "",
-    totalHostels: "",
-    totalLibraries: "",
-    totalAuditoriums: "",
-    totalSportsFacilities: "",
-    institutionCondition: "",
-    institutionStatus: "",
-    institutionFeatures: "",
-    registeredBy: ""
+    registeredBy: "",
+    // Initialize all optional fields as undefined
+    buildingType: undefined,
+    floorCount: undefined,
+    totalArea: undefined,
+    yearBuilt: undefined,
+    currentBuildingUse: undefined,
+    buildingCondition: undefined,
+    buildingFeatures: undefined,
+    landType: undefined,
+    landSize: undefined,
+    landSizeUnit: undefined,
+    landCondition: undefined,
+    landUse: undefined,
+    plotNumber: undefined,
+    blockNumber: undefined,
+    layoutName: undefined,
+    surveyPlanNumber: undefined,
+    beaconNumbers: undefined,
+    perimeter: undefined,
+    shape: undefined,
+    topography: undefined,
+    zoningClassification: undefined,
+    titleType: undefined,
+    titleReferenceNumber: undefined,
+    easements: undefined,
+    roadAccess: undefined,
+    utilityAccess: undefined,
+    proposedUse: undefined,
+    currentUse: undefined,
+    vehicleType: undefined,
+    makeModel: undefined,
+    year: undefined,
+    registrationNumber: undefined,
+    vin: undefined,
+    engineNumber: undefined,
+    vehicleCondition: undefined,
+    color: undefined,
+    seatingCapacity: undefined,
+    purchasePrice: undefined,
+    fuelType: undefined,
+    transmission: undefined,
+    mileage: undefined,
+    lastServiceDate: undefined,
+    nextServiceDue: undefined,
+    insuranceProvider: undefined,
+    insurancePolicyNumber: undefined,
+    insuranceExpiryDate: undefined,
+    assignedDriver: undefined,
+    assignedDepartment: undefined,
+    parkingLocation: undefined,
+    institutionType: undefined,
+    institutionLevel: undefined,
+    institutionName: undefined,
+    yearEstablished: undefined,
+    totalStudents: undefined,
+    totalStaff: undefined,
+    totalClassrooms: undefined,
+    totalLaboratories: undefined,
+    totalOffices: undefined,
+    totalToilets: undefined,
+    totalHostels: undefined,
+    totalLibraries: undefined,
+    totalAuditoriums: undefined,
+    totalSportsFacilities: undefined,
+    institutionCondition: undefined,
+    institutionStatus: undefined,
+    institutionFeatures: undefined,
+    facilityType: undefined,
+    facilityCapacity: undefined,
+    facilityStatus: undefined,
+    totalTanks: undefined,
+    totalPumps: undefined,
+    totalDispensers: undefined,
+    totalStorage: undefined,
+    fuelTypes: undefined,
+    safetyCertification: undefined,
+    lastInspectionDate: undefined,
+    nextInspectionDate: undefined,
+    facilityCondition: undefined,
+    facilityFeatures: undefined,
+    tankCapacities: undefined,
+    pumpTypes: undefined,
+    safetyEquipment: undefined,
+    otherPropertySubtype: undefined,
+    totalRooms: undefined,
+    totalBeds: undefined,
+    operatingHours: undefined,
+    maintenanceSchedule: undefined,
+    equipmentList: undefined,
+    infrastructureDetails: undefined
   })
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -280,13 +479,21 @@ export default function PropertyEdit() {
           state: propertyData.state,
           lga: propertyData.lga,
           address: propertyData.address,
+          topography: propertyData.topography || "",
+          longitude: propertyData.longitude || "",
+          latitude: propertyData.latitude || "",
           coordinates: {
             latitude: propertyData.coordinates.coordinates[1],
             longitude: propertyData.coordinates.coordinates[0],
           },
+          roadAccess: propertyData.roadAccess || "",
+          currentUse: propertyData.currentUse || "",
+          proposedUse: propertyData.proposedUse || "",
           description: propertyData.description || "",
           landType: propertyData.landType || "",
           landSize: propertyData.landSize || 0,
+          shape: propertyData.shape || "",
+          layoutName: propertyData.layoutName || "",
           landCondition: propertyData.landCondition || "",
           landUse: propertyData.landUse || "",
           titleType: propertyData.titleType || "",
@@ -365,25 +572,170 @@ export default function PropertyEdit() {
       setSaving(true)
       setError(null)
 
-      const submitData = {
-        ...formData,
+      // Create base object with common fields
+      const baseData: BaseData = {
+        propertyType: formData.propertyType,
+        propertyName: formData.propertyName,
+        propertyId: formData.propertyId,
+        description: formData.description,
+        acquisitionDate: formData.acquisitionDate,
+        estimatedValue: formData.estimatedValue,
+        status: formData.status,
+        state: formData.state,
+        lga: formData.lga,
+        address: formData.address,
+        longitude: formData.longitude,
+        latitude: formData.latitude,
         coordinates: {
           latitude: formData.coordinates.latitude,
           longitude: formData.coordinates.longitude,
         },
+        registeredBy: formData.registeredBy
+      }
+
+      // Add type-specific fields based on property type
+      let submitData = { ...baseData }
+
+      switch (formData.propertyType) {
+        case "house":
+          submitData = {
+            ...submitData,
+            buildingType: formData.buildingType,
+            floorCount: formData.floorCount,
+            totalArea: formData.totalArea,
+            yearBuilt: formData.yearBuilt,
+            currentBuildingUse: formData.currentBuildingUse,
+            buildingCondition: formData.buildingCondition,
+            buildingFeatures: formData.buildingFeatures
+          }
+          break
+
+        case "land":
+          submitData = {
+            ...submitData,
+            landType: formData.landType,
+            landSize: formData.landSize,
+            landSizeUnit: formData.landSizeUnit,
+            landCondition: formData.landCondition,
+            landUse: formData.landUse,
+            plotNumber: formData.plotNumber,
+            blockNumber: formData.blockNumber,
+            layoutName: formData.layoutName,
+            surveyPlanNumber: formData.surveyPlanNumber,
+            beaconNumbers: formData.beaconNumbers,
+            perimeter: formData.perimeter,
+            shape: formData.shape,
+            topography: formData.topography,
+            zoningClassification: formData.zoningClassification,
+            titleType: formData.titleType,
+            titleReferenceNumber: formData.titleReferenceNumber,
+            easements: formData.easements,
+            roadAccess: formData.roadAccess,
+            utilityAccess: formData.utilityAccess,
+            proposedUse: formData.proposedUse,
+            currentUse: formData.currentUse
+          }
+          break
+
+        case "vehicle":
+          submitData = {
+            ...submitData,
+            vehicleType: formData.vehicleType,
+            makeModel: formData.makeModel,
+            year: formData.year,
+            registrationNumber: formData.registrationNumber,
+            vin: formData.vin,
+            engineNumber: formData.engineNumber,
+            vehicleCondition: formData.vehicleCondition,
+            color: formData.color,
+            seatingCapacity: formData.seatingCapacity,
+            purchasePrice: formData.purchasePrice,
+            fuelType: formData.fuelType,
+            transmission: formData.transmission,
+            mileage: formData.mileage,
+            lastServiceDate: formData.lastServiceDate,
+            nextServiceDue: formData.nextServiceDue,
+            insuranceProvider: formData.insuranceProvider,
+            insurancePolicyNumber: formData.insurancePolicyNumber,
+            insuranceExpiryDate: formData.insuranceExpiryDate,
+            assignedDepartment: formData.assignedDepartment,
+            assignedDriver: formData.assignedDriver,
+            parkingLocation: formData.parkingLocation
+          }
+          break
+
+        case "institutions":
+          submitData = {
+            ...submitData,
+            institutionType: formData.institutionType,
+            institutionLevel: formData.institutionLevel,
+            institutionName: formData.institutionName,
+            yearEstablished: formData.yearEstablished,
+            totalStudents: formData.totalStudents,
+            totalStaff: formData.totalStaff,
+            totalClassrooms: formData.totalClassrooms,
+            totalLaboratories: formData.totalLaboratories,
+            totalOffices: formData.totalOffices,
+            totalToilets: formData.totalToilets,
+            totalHostels: formData.totalHostels,
+            totalLibraries: formData.totalLibraries,
+            totalAuditoriums: formData.totalAuditoriums,
+            totalSportsFacilities: formData.totalSportsFacilities,
+            institutionCondition: formData.institutionCondition,
+            institutionStatus: formData.institutionStatus,
+            institutionFeatures: formData.institutionFeatures
+          }
+          break
+
+        case "petroleum":
+          submitData = {
+            ...submitData,
+            facilityType: formData.facilityType,
+            facilityCapacity: formData.facilityCapacity,
+            facilityStatus: formData.facilityStatus,
+            totalTanks: formData.totalTanks,
+            totalPumps: formData.totalPumps,
+            totalDispensers: formData.totalDispensers,
+            totalStorage: formData.totalStorage,
+            fuelTypes: formData.fuelTypes,
+            safetyCertification: formData.safetyCertification,
+            lastInspectionDate: formData.lastInspectionDate,
+            nextInspectionDate: formData.nextInspectionDate,
+            facilityCondition: formData.facilityCondition,
+            facilityFeatures: formData.facilityFeatures,
+            tankCapacities: formData.tankCapacities,
+            pumpTypes: formData.pumpTypes,
+            safetyEquipment: formData.safetyEquipment
+          }
+          break
+
+        case "others":
+          submitData = {
+            ...submitData,
+            otherPropertySubtype: formData.otherPropertySubtype,
+            totalRooms: formData.totalRooms,
+            totalBeds: formData.totalBeds,
+            operatingHours: formData.operatingHours,
+            maintenanceSchedule: formData.maintenanceSchedule,
+            equipmentList: formData.equipmentList,
+            infrastructureDetails: formData.infrastructureDetails
+          }
+          break
       }
 
       await axios.put(
-        `https://bdicisp.vercel.app/api/v1/properties/${id}`,
+        `https://bdicisp.vercel.app/api/v1/properties/collection/${id}`,
         submitData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
         }
       )
+      toast.success('Property updated successfully')
 
-      navigate(`/property/${id}`)
+
+      navigate(`/edit/property/${id}`)
     } catch (err) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 401) {
@@ -456,60 +808,13 @@ export default function PropertyEdit() {
       setIsUploading(false)
     }
   }
-//   const authenticator =  async () => {
-//     try {
-//         const response = await axios.post('https://bdicisp.onrender.com/api/v1/auth/imagekit/auth');
 
-//         if (!response.data) {
-//             const errorText = await response.data;
-//             throw new Error(`Request failed with status ${response.status}: ${errorText}`);
-//         }
-
-//         const data = await response.data;
-//         const { signature, expire, token } = data;
-//         return { signature, expire, token };
-//     } catch (error) {
-//         //throw new Error(`Authentication request failed: ${error.message}`);
-//     }
-// };
-const urlEndpoint = 'https://ik.imagekit.io/bdic';
-const publicKey = 'public_k/7VGHSYTH1q/STxZGOGFWUrsdE='
-const authenticationEndpoint ="https://bdicisp.onrender.com/api/v1/auth/imagekit/auth"
-const imagekitConfigOptions = { urlEndpoint,publicKey,authenticationEndpoint };
-imagekitConfigOptions.publicKey = publicKey;
-imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
-
-//const imagekit = new ImageKit(imagekitConfigOptions);
-  // const handleDeleteImage = async (id: string,index:number,imageUrl:string) => {
-  //   try {
-  //     setIsDeleting(true)
-    
-  //     await axios.delete(
-  //       `https://bdicisp.vercel.app/api/v1/properties/collection/${id}/images/${index}`,
-  //       {
-  //         headers: {
-  //           "x-access-token": `Bearer ${localStorage.getItem("token")}`,
-  //         }
-  //       }
-  //     )
-
-  //     if (property) {
-  //       setProperty({
-  //         ...property,
-  //         propertyImages: property.propertyImages?.filter(img => img !== imageUrl) || [],
-  //       })
-  //     }
-  //     setSelectedImage(null)
-  //   } catch (err) {
-  //     if (axios.isAxiosError(err)) {
-  //       setError(err.response?.data?.message || "Failed to delete image")
-  //     } else {
-  //       setError("An unexpected error occurred")
-  //     }
-  //   } finally {
-  //     setIsDeleting(false)
-  //   }
-  // }
+  const urlEndpoint = 'https://ik.imagekit.io/bdic';
+  const publicKey = 'public_k/7VGHSYTH1q/STxZGOGFWUrsdE='
+  const authenticationEndpoint ="https://bdicisp.onrender.com/api/v1/auth/imagekit/auth"
+  const imagekitConfigOptions = { urlEndpoint,publicKey,authenticationEndpoint };
+  imagekitConfigOptions.publicKey = publicKey;
+  imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
 
   if (loading) {
     return (
@@ -617,7 +922,7 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                   id="acquisitionDate"
                   name="acquisitionDate"
                   type="date"
-                  value={formData.acquisitionDate}
+                  value={new Date(formData.acquisitionDate).toISOString().split('T')[0]}
                   onChange={handleChange}
                 />
               </div>
@@ -662,11 +967,26 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                       <SelectValue placeholder="Select land type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Farmland (Crop Cultivation)">Farmland (Crop Cultivation)</SelectItem>
-                      <SelectItem value="Residential">Residential</SelectItem>
-                      <SelectItem value="Commercial">Commercial</SelectItem>
-                      <SelectItem value="Industrial">Industrial</SelectItem>
-                      <SelectItem value="Agricultural">Agricultural</SelectItem>
+                      <SelectItem value="Residential Plot">Residential Plot</SelectItem>
+                      <SelectItem value="Commercial Plot">Commercial Plot</SelectItem>
+                      <SelectItem value="Industrial Plot">Industrial Plot</SelectItem>
+                      <SelectItem value="Agricultural Land">Agricultural Land / Farmland</SelectItem>
+                      <SelectItem value="Forest Reserve">Forest Reserve / Green Zone</SelectItem>
+                      <SelectItem value="School Reserved Land">School Reserved Land</SelectItem>
+                      <SelectItem value="Health Facility Reserved Land">Health Facility Reserved Land</SelectItem>
+                      <SelectItem value="Government Reserved Area">Government Reserved Area (GRA)</SelectItem>
+                      <SelectItem value="Recreational Land">Recreational / Park Land</SelectItem>
+                      <SelectItem value="Cemetery">Cemetery / Burial Ground</SelectItem>
+                      <SelectItem value="Road Reserve">Road / Transport Corridor Reserve</SelectItem>
+                      <SelectItem value="Water Resource Land">Water Resource Land (e.g., near dams, rivers)</SelectItem>
+                      <SelectItem value="Market Expansion Land">Market Expansion Land</SelectItem>
+                      <SelectItem value="Unallocated Government Land">Unallocated Government Land</SelectItem>
+                      <SelectItem value="Land with Disputes">Land with Disputes / Encumbrances</SelectItem>
+                      <SelectItem value="Leasehold Plot">Leasehold Plot</SelectItem>
+                      <SelectItem value="Public Infrastructure Land">Land for Public Infrastructure Projects</SelectItem>
+                      <SelectItem value="Buffer Zone">Buffer Zone / Right of Way</SelectItem>
+                      <SelectItem value="Tourism Development Plot">Tourism Development Plot</SelectItem>
+                      <SelectItem value="Relocation Plot">Relocation / Resettlement Plot</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -695,7 +1015,7 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                         <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="hectares">Hectares</SelectItem>
+                        <SelectItem value="ha">Hectares</SelectItem>
                         <SelectItem value="acres">Acres</SelectItem>
                         <SelectItem value="square meters">Square Meters</SelectItem>
                       </SelectContent>
@@ -715,32 +1035,206 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                       <SelectValue placeholder="Select land condition" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="undeveloped_cleared">Undeveloped (Cleared)</SelectItem>
-                      <SelectItem value="undeveloped_wooded">Undeveloped (Wooded)</SelectItem>
-                      <SelectItem value="partially_developed">Partially Developed</SelectItem>
-                      <SelectItem value="fully_developed">Fully Developed</SelectItem>
+                      <SelectItem value="Excellent">Excellent</SelectItem>
+                      <SelectItem value="Good">Good</SelectItem>
+                      <SelectItem value="Fair">Fair</SelectItem>
+                      <SelectItem value="Poor">Poor</SelectItem>
+                      <SelectItem value="Needs Improvement">Needs Improvement</SelectItem>
+                      <SelectItem value="Under Development">Under Development</SelectItem>
+                      <SelectItem value="Abandoned">Abandoned</SelectItem>
+                      <SelectItem value="Contaminated">Contaminated</SelectItem>
+                      <SelectItem value="Eroded">Eroded</SelectItem>
+                      <SelectItem value="Flooded">Flooded</SelectItem>
+                      <SelectItem value="Overgrown">Overgrown</SelectItem>
+                      <SelectItem value="Under Construction">Under Construction</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="landUse">Land Use</Label>
+                  <Label htmlFor="currentUse">Current Use</Label>
                   <Select
-                    value={formData.landUse}
+                    value={formData.currentUse}
                     onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, landUse: value }))
+                      setFormData((prev) => ({ ...prev, currentUse: value }))
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select land use" />
+                      <SelectValue placeholder="Select current use" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="farming">Farming</SelectItem>
-                      <SelectItem value="residential">Residential</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                      <SelectItem value="industrial">Industrial</SelectItem>
+                      <SelectItem value="Vacant">Vacant</SelectItem>
+                      <SelectItem value="Residential">Residential</SelectItem>
+                      <SelectItem value="Commercial">Commercial</SelectItem>
+                      <SelectItem value="Industrial">Industrial</SelectItem>
+                      <SelectItem value="Agricultural">Agricultural</SelectItem>
+                      <SelectItem value="Recreational">Recreational</SelectItem>
+                      <SelectItem value="Institutional">Institutional</SelectItem>
+                      <SelectItem value="Mixed Use">Mixed Use</SelectItem>
+                      <SelectItem value="Under Construction">Under Construction</SelectItem>
+                      <SelectItem value="Abandoned">Abandoned</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="proposedUse">Proposed Use</Label>
+                  <Select
+                    value={formData.proposedUse}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, proposedUse: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select proposed use" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Residential">Residential</SelectItem>
+                      <SelectItem value="Commercial">Commercial</SelectItem>
+                      <SelectItem value="Industrial">Industrial</SelectItem>
+                      <SelectItem value="Agricultural">Agricultural</SelectItem>
+                      <SelectItem value="Recreational">Recreational</SelectItem>
+                      <SelectItem value="Institutional">Institutional</SelectItem>
+                      <SelectItem value="Mixed Use">Mixed Use</SelectItem>
+                      <SelectItem value="Infrastructure">Infrastructure</SelectItem>
+                      <SelectItem value="Conservation">Conservation</SelectItem>
+                      <SelectItem value="No Change">No Change</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="roadAccess">Road Access </Label>
+                  <Select
+                    value={formData.roadAccess}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, roadAccess: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select road access" />
+                    </SelectTrigger>
+                    <SelectContent>
+                  <SelectItem value="Tarred Road">Tarred Road</SelectItem>
+                  <SelectItem value="Untarred Road">Untarred Road</SelectItem>
+                  <SelectItem value="Paved Access Road">Paved Access Road</SelectItem>
+                  <SelectItem value="Earth Road">Earth Road</SelectItem>
+                  <SelectItem value="No Direct Access">No Direct Access</SelectItem>
+                  <SelectItem value="Pedestrian Path Only">Pedestrian Path Only</SelectItem>
+                  <SelectItem value="Proposed Road">Proposed Road (On Plan)</SelectItem>
+                </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="topography">Topography</Label>
+                  <Select
+                    value={formData.topography}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, topography: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select topography" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Flat">Flat</SelectItem>
+                      <SelectItem value="Slightly Sloped">Slightly Sloped</SelectItem>
+                      <SelectItem value="Moderately Sloped">Moderately Sloped</SelectItem>
+                      <SelectItem value="Steep">Steep</SelectItem>
+                      <SelectItem value="Hilly">Hilly</SelectItem>
+                      <SelectItem value="Valley">Valley</SelectItem>
+                      <SelectItem value="Plateau">Plateau</SelectItem>
+                      <SelectItem value="Mixed">Mixed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="shape">Land Shape</Label>
+                  <Select
+                    value={formData.shape}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, shape: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select land shape" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Rectangular">Rectangular</SelectItem>
+                      <SelectItem value="Square">Square</SelectItem>
+                      <SelectItem value="Irregular">Irregular</SelectItem>
+                      <SelectItem value="L-Shaped">L-Shaped</SelectItem>
+                      <SelectItem value="Triangular">Triangular</SelectItem>
+                      <SelectItem value="Trapezoidal">Trapezoidal</SelectItem>
+                      <SelectItem value="Circular">Circular</SelectItem>
+                      <SelectItem value="Oval">Oval</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="layoutName">Layout Name/Scheme</Label>
+                  <Select
+                    value={formData.layoutName}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, layoutName: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select layout name/scheme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                  <SelectItem value="New GRA">New GRA</SelectItem>
+                  <SelectItem value="Old GRA">Old GRA</SelectItem>
+                  <SelectItem value="Federal Low-Cost Housing Scheme">Federal Low-Cost Housing Scheme</SelectItem>
+                  <SelectItem value="High-Level Layout">High-Level Layout</SelectItem>
+                  <SelectItem value="Low-Level Layout">Low-Level Layout</SelectItem>
+                  <SelectItem value="Wurukum Layout">Wurukum Layout</SelectItem>
+                  <SelectItem value="Modern Market Layout">Modern Market Layout</SelectItem>
+                  <SelectItem value="North Bank Layout">North Bank Layout</SelectItem>
+                  <SelectItem value="Nyiman Layout">Nyiman Layout</SelectItem>
+                  <SelectItem value="Apir Industrial Layout">Apir Industrial Layout</SelectItem>
+                  <SelectItem value="Welfare Quarters Layout">Welfare Quarters Layout</SelectItem>
+                  <SelectItem value="Staff Quarters Scheme">Staff Quarters Scheme</SelectItem>
+                  <SelectItem value="Education Board Housing Scheme">Education Board Housing Scheme</SelectItem>
+                  <SelectItem value="Police Barracks Layout">Police Barracks Layout</SelectItem>
+                  <SelectItem value="Army Barracks Layout">Army Barracks Layout</SelectItem>
+                  <SelectItem value="Custom Layout">Custom Layout</SelectItem>
+                  <SelectItem value="Industrial Layout">Industrial Layout</SelectItem>
+                  <SelectItem value="Agric Layout">Agric Layout</SelectItem>
+                  <SelectItem value="Judges Quarters Layout">Judges Quarters Layout</SelectItem>
+                  <SelectItem value="Mobile Police Quarters Layout">Mobile Police Quarters Layout</SelectItem>
+                  <SelectItem value="Government Reserved Area (GRA)">Government Reserved Area (GRA)</SelectItem>
+                  <SelectItem value="Makurdi International Market Layout">Makurdi International Market Layout</SelectItem>
+                  <SelectItem value="Private Developer Estate">Private Developer Estate</SelectItem>
+                  <SelectItem value="Unplanned Area / Informal Settlement">Unplanned Area / Informal Settlement</SelectItem>
+                  <SelectItem value="Other">Other (Specify)</SelectItem>
+                </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="surveyPlanNumber">Survey Plan Number (Optional)</Label>
+                  <Input
+                    id="surveyPlanNumber"
+                    name="surveyPlanNumber"
+                    value={formData.surveyPlanNumber}
+                    onChange={handleChange}
+                    placeholder="Enter survey plan number"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="beaconNumbers">Beacon Numbers (Optional)</Label>
+                  <Input
+                    id="beaconNumbers"
+                    name="beaconNumbers"
+                    value={formData.beaconNumbers}
+                    onChange={handleChange}
+                    placeholder="Enter beacon numbers (comma separated)"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -755,11 +1249,19 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                       <SelectValue placeholder="Select title type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="c_of_o">Certificate of Occupancy</SelectItem>
-                      <SelectItem value="r_of_o">Right of Occupancy</SelectItem>
-                      <SelectItem value="deed">Deed</SelectItem>
-                      <SelectItem value="lease">Lease</SelectItem>
-                    </SelectContent>
+                  <SelectItem value="Certificate of Occupancy">Certificate of Occupancy (C of O)</SelectItem>
+                  <SelectItem value="Right of Occupancy">Right of Occupancy (R of O)</SelectItem>
+                  <SelectItem value="Deed of Assignment">Deed of Assignment</SelectItem>
+                  <SelectItem value="Deed of Conveyance">Deed of Conveyance</SelectItem>
+                  <SelectItem value="Freehold">Freehold</SelectItem>
+                  <SelectItem value="Customary Right of Occupancy">Customary Right of Occupancy</SelectItem>
+                  <SelectItem value="Gazette">Gazette</SelectItem>
+                  <SelectItem value="Excision">Excision</SelectItem>
+                  <SelectItem value="Allocation Letter">Allocation Letter</SelectItem>
+                  <SelectItem value="Government Lease">Government Lease</SelectItem>
+                  <SelectItem value="Unknown">Unknown / Unregistered</SelectItem>
+                  <SelectItem value="Other">Other (Specify)</SelectItem>
+                </SelectContent>
                   </Select>
                 </div>
 
@@ -771,28 +1273,6 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                     value={formData.titleReferenceNumber}
                     onChange={handleChange}
                     placeholder="Enter title reference number"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="surveyPlanNumber">Survey Plan Number</Label>
-                  <Input
-                    id="surveyPlanNumber"
-                    name="surveyPlanNumber"
-                    value={formData.surveyPlanNumber}
-                    onChange={handleChange}
-                    placeholder="Enter survey plan number"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="beaconNumbers">Beacon Numbers</Label>
-                  <Input
-                    id="beaconNumbers"
-                    name="beaconNumbers"
-                    value={formData.beaconNumbers}
-                    onChange={handleChange}
-                    placeholder="Enter beacon numbers (comma separated)"
                   />
                 </div>
               </CardContent>
@@ -807,8 +1287,9 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="vehicleType">Vehicle Type</Label>
+                  <Label htmlFor="vehicleType">Vehicle Type </Label>
                   <Select
+                  value={formData.vehicleType}
                    onValueChange={(value) =>
                     setFormData((prev) => ({ ...prev, vehicleType: value }))
                   }
@@ -1497,11 +1978,11 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                     name="latitude"
                     type="number"
                     step="any"
-                    value={formData.coordinates.latitude}
+                    value={formData.latitude}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        coordinates: { ...prev.coordinates, latitude: e.target.value },
+                        latitude:e.target.value ,
                       }))
                     }
                     placeholder="Enter latitude"
@@ -1515,11 +1996,11 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                     name="longitude"
                     type="number"
                     step="any"
-                    value={formData.coordinates.longitude}
+                    value={formData.longitude}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        coordinates: { ...prev.coordinates, longitude: e.target.value },
+                        longitude: e.target.value ,
                       }))
                     }
                     placeholder="Enter longitude"
@@ -1647,7 +2128,7 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
                           className="absolute top-1 right-1 h-6 w-6 bg-red-500/80 hover:bg-red-500 text-white"
                           onClick={(e) => {
                             e.stopPropagation()
-                           // handleDeleteImage(image)
+                            // handleDeleteImage(image)
                           }}
                           disabled={isDeleting}
                         >
@@ -1685,7 +2166,6 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
               </div>
             </CardContent>
           </Card>
-
         </div>
 
         {/* Submit Button */}
@@ -1703,7 +2183,6 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
             <DialogTitle>Property Image</DialogTitle>
           </DialogHeader>
           <div className="relative">
-          
             <img
               src={selectedImage || ""}
               alt="Property preview"
@@ -1712,7 +2191,6 @@ imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   )
-} 
+}

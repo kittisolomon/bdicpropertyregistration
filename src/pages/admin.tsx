@@ -292,7 +292,6 @@ const [rolesPermission,setRolesPermission]=useState([])
         }
       )
      
-      
       setNewAdminEmail(newAdmin.email)
       setNewAdminId(response.data.data.newUser._id)
       setIsAddAdminOpen(false)

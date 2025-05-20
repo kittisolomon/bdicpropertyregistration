@@ -198,6 +198,7 @@ export default function Dashboard() {
     })
     alert(response.data)
   }
+  
   useEffect(() => {
     const token = localStorage.getItem("authToken")
     if(!token) return navigate("/admin/securelogin/login/")
