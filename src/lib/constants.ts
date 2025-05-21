@@ -120,7 +120,9 @@ export const educationalInstitutionTypes: PropertyTypes = {
     "Teachers' Training College"
   ],
   "Higher Education": [
-    "Tertiary Institution (College, Polytechnic, University)",
+    "College Of Education",
+    "Polytechnic",
+    "University",
     "Research Institute",
     "ICT / Innovation Hub",
     "Adult Education Centre"

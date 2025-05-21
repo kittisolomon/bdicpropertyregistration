@@ -193,24 +193,7 @@ interface PropertyStats {
   propertiesByState: Record<string, number>
 }
 
-const urlEndpoint = 'https://ik.imagekit.io/bdic';
-const publicKey = 'public_k/7VGHSYTH1q/STxZGOGFWUrsdE='; 
-const authenticator =  async () => {
-    try {
-        const response = await axios.post('https://bdicisp.onrender.com/api/v1/auth/imagekit/auth');
 
-        if (!response.data) {
-            const errorText = await response.data;
-            throw new Error(`Request failed with status ${response.status}: ${errorText}`);
-        }
-
-        const data = await response.data;
-        const { signature, expire, token } = data;
-        return { signature, expire, token };
-    } catch (error) {
-        //throw new Error(`Authentication request failed: ${error.message}`);
-    }
-};
 
 // Add this validation function near the top of the file, after the interfaces
 const validateStep = (step: number, formData: FormData, photos: string[]): boolean => {
@@ -299,6 +282,28 @@ export default function Registration() {
   const [newFeatureCondition, setNewFeatureCondition] = useState("")
   //const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
+  const urlEndpoint = 'https://ik.imagekit.io/bdic';
+  const publicKey = 'public_k/7VGHSYTH1q/STxZGOGFWUrsdE='; 
+
+
+  const authenticator =  async () => {
+    try {
+      setUploading(true)
+      setIUploading(true)
+        const response = await axios.post('https://bdicisp.onrender.com/api/v1/auth/imagekit/auth');
+
+        if (!response.data) {
+            const errorText = await response.data;
+            throw new Error(`Request failed with status ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.data;
+        const { signature, expire, token } = data;
+        return { signature, expire, token };
+    } catch (error) {
+        //throw new Error(`Authentication request failed: ${error.message}`);
+    }
+};
 
   // Function to fetch property statistics
   const fetchPropertyStats = async () => {
@@ -1526,7 +1531,9 @@ console.log(formData.propertyImages)
                   <SelectItem value="filling_station">Filling Station</SelectItem>
                   <SelectItem value="depot">Depot</SelectItem>
                   <SelectItem value="terminal">Terminal</SelectItem>
+                  <SelectItem value="CNG Station">CNG Station</SelectItem>
                   <SelectItem value="lpg_plant">LPG Plant</SelectItem>
+                  <SelectItem value="Bulk Storage Facility">Bulk Storage Facility</SelectItem>
                   <SelectItem value="lubricant_plant">Lubricant Plant</SelectItem>
                   <SelectItem value="aviation_fuel">Aviation Fuel Facility</SelectItem>
                 </SelectContent>

@@ -118,8 +118,22 @@ interface Property {
   registeredBy?: string
 
   // Petroleum specific fields
-  stationType?: string
-  storageCapacity?: number
+  facilityType?: string
+  facilityCapacity?: string
+  facilityStatus?: string
+  totalTanks?: string
+  totalPumps?: string
+  totalDispensers?: string
+  totalStorage?: string
+  fuelTypes?: string[]
+  safetyCertification?: string
+  lastInspectionDate?: string
+  nextInspectionDate?: string
+  facilityCondition?: string
+  facilityFeatures?: string
+  tankCapacities?: { type: string; capacity: string; unit: string }[]
+  pumpTypes?: { type: string; count: string }[]
+  safetyEquipment?: { name: string; quantity: string; lastInspection: string }[]
 }
 
 
@@ -432,14 +446,138 @@ export default function PropertyView() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-500">Station Type</Label>
-                <p className="text-sm">{property.stationType || "N/A"}</p>
+                <Label className="text-sm font-medium text-gray-500">Facility Type</Label>
+                <p className="text-sm">{property.facilityType || "N/A"}</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-500">Storage Capacity (L)</Label>
-                <p className="text-sm">{property.storageCapacity?.toLocaleString() ?? "N/A"}</p>
+                <Label className="text-sm font-medium text-gray-500">Facility Capacity</Label>
+                <p className="text-sm">{property.facilityCapacity || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Facility Status</Label>
+                <p className="text-sm">{property.facilityStatus || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Total Tanks</Label>
+                <p className="text-sm">{property.totalTanks || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Total Pumps</Label>
+                <p className="text-sm">{property.totalPumps || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Total Dispensers</Label>
+                <p className="text-sm">{property.totalDispensers || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Total Storage</Label>
+                <p className="text-sm">{property.totalStorage || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Fuel Types</Label>
+                <p className="text-sm">{property.fuelTypes?.join(", ") || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Safety Certification</Label>
+                <p className="text-sm">{property.safetyCertification || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Last Inspection Date</Label>
+                <p className="text-sm">{property.lastInspectionDate ? new Date(property.lastInspectionDate).toLocaleDateString() : "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Next Inspection Date</Label>
+                <p className="text-sm">{property.nextInspectionDate ? new Date(property.nextInspectionDate).toLocaleDateString() : "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Facility Condition</Label>
+                <p className="text-sm">{property.facilityCondition || "N/A"}</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Facility Features</Label>
+                <p className="text-sm">{property.facilityFeatures || "N/A"}</p>
               </div>
             </div>
+
+            {property.tankCapacities && property.tankCapacities.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Tank Capacities</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {property.tankCapacities.map((tank, index) => (
+                    <Card key={index}>
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <Label className="text-xs text-gray-500">Type</Label>
+                            <p className="text-sm">{tank.type}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">Capacity</Label>
+                            <p className="text-sm">{tank.capacity}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">Unit</Label>
+                            <p className="text-sm">{tank.unit}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {property.pumpTypes && property.pumpTypes.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Pump Types</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {property.pumpTypes.map((pump, index) => (
+                    <Card key={index}>
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <Label className="text-xs text-gray-500">Type</Label>
+                            <p className="text-sm">{pump.type}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">Count</Label>
+                            <p className="text-sm">{pump.count}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {property.safetyEquipment && property.safetyEquipment.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-500">Safety Equipment</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {property.safetyEquipment.map((equipment, index) => (
+                    <Card key={index}>
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <Label className="text-xs text-gray-500">Name</Label>
+                            <p className="text-sm">{equipment.name}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">Quantity</Label>
+                            <p className="text-sm">{equipment.quantity}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-gray-500">Last Inspection</Label>
+                            <p className="text-sm">{equipment.lastInspection ? new Date(equipment.lastInspection).toLocaleDateString() : "N/A"}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )
       case "land":

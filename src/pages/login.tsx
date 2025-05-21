@@ -166,7 +166,7 @@ export default function Login() {
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-xs text-gray-600">
           <p className="font-medium text-gray-800 mb-1">Security Notice</p>
           <p>
-            This is a State Government system restricted to authorized users for official purposes. Unauthorized
+            This is a State Government system restricted to authorized officials for official purposes. Unauthorized
             access is prohibited and subject to prosecution.
           </p>
         </div>

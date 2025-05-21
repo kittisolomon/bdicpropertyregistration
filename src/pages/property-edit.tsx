@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-
+import { IKContext, IKUpload } from 'imagekitio-react'
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectGroup,SelectLabel,  SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import axios from "axios"
-import { vehicleTypes } from "@/lib/constants"
+import { educationalInstitutionTypes, vehicleTypes } from "@/lib/constants"
 
 interface Property {
   _id: string
@@ -111,6 +111,8 @@ type BaseData = {
     longitude: string
   }
   registeredBy?: string
+  propertyImages?: string[]
+  propertyDeed:string[]
   // House specific fields
   buildingType?: string
   floorCount?: number
@@ -234,6 +236,8 @@ interface FormData {
   currentBuildingUse?: string
   buildingCondition?: string
   buildingFeatures?: string[]
+  propertyImages?: string[]
+  propertyDeed?:string[]
   // Land specific fields
   landType?: string
   landSize?: number
@@ -352,6 +356,8 @@ export default function PropertyEdit() {
     floorCount: undefined,
     totalArea: undefined,
     yearBuilt: undefined,
+    propertyImages: [],
+    propertyDeed:[],
     currentBuildingUse: undefined,
     buildingCondition: undefined,
     buildingFeatures: undefined,
@@ -486,6 +492,7 @@ export default function PropertyEdit() {
             latitude: propertyData.coordinates.coordinates[1],
             longitude: propertyData.coordinates.coordinates[0],
           },
+          facilityType: propertyData.facilityType || "",
           roadAccess: propertyData.roadAccess || "",
           currentUse: propertyData.currentUse || "",
           proposedUse: propertyData.proposedUse || "",
@@ -496,6 +503,19 @@ export default function PropertyEdit() {
           layoutName: propertyData.layoutName || "",
           landCondition: propertyData.landCondition || "",
           landUse: propertyData.landUse || "",
+          facilityCapacity : propertyData.facilityCapacity || "",
+          facilityStatus : propertyData.facilityStatus || "",
+          safetyCertification : propertyData.safetyCertification || "",
+
+          lastInspectionDate : propertyData.lastInspectionDate || "",
+          nextInspectionDate : propertyData.nextInspectionDate || "",
+          facilityCondition : propertyData.facilityCondition || "",
+          totalTanks : propertyData.totalTanks || "",
+          totalPumps : propertyData.totalPumps || "",
+          totalDispensers : propertyData.totalDispensers || "",
+          totalStorage : propertyData.totalStorage || "",
+          facilityFeatures : propertyData.facilityFeatures || "",
+          fuelTypes: propertyData.fuelTypes || "",
           titleType: propertyData.titleType || "",
           titleReferenceNumber: propertyData.titleReferenceNumber || "",
           surveyPlanNumber: propertyData.surveyPlanNumber || "",
@@ -510,7 +530,6 @@ export default function PropertyEdit() {
           color: propertyData.color || "",
           seatingCapacity: propertyData.seatingCapacity || "",
           purchasePrice: propertyData.purchasePrice || "",
-          fuelType: propertyData.fuelType || "",
           transmission: propertyData.transmission || "",
           mileage: propertyData.mileage || "",
           lastServiceDate: propertyData.lastServiceDate || "",
@@ -546,7 +565,9 @@ export default function PropertyEdit() {
           institutionCondition: propertyData.institutionCondition || "",
           institutionStatus: propertyData.institutionStatus || "",
           institutionFeatures: propertyData.institutionFeatures || "",
-          registeredBy: propertyData.registeredBy || ""
+          registeredBy: propertyData.registeredBy || "",
+          propertyImages: propertyData.propertyImages || [],
+          propertyDeed:propertyData.propertyDeed || [],
         })
       } catch (err) {
         if (axios.isAxiosError(err)) {
@@ -565,7 +586,14 @@ export default function PropertyEdit() {
 
     fetchProperty()
   }, [id, navigate])
-
+  const handleDeleteImage = (index: number) => {
+    if (!property?.propertyImages) return;
+    const updatedImages = [...property.propertyImages];
+    updatedImages.splice(index, 1);
+    setProperty({ ...property, propertyImages: updatedImages });
+    setFormData((prev) => ({ ...prev, propertyImages: updatedImages }));
+  }
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -590,7 +618,9 @@ export default function PropertyEdit() {
           latitude: formData.coordinates.latitude,
           longitude: formData.coordinates.longitude,
         },
-        registeredBy: formData.registeredBy
+        registeredBy: formData.registeredBy,
+        propertyImages: formData.propertyImages || [],
+        propertyDeed:formData.propertyDeed || [],
       }
 
       // Add type-specific fields based on property type
@@ -604,9 +634,32 @@ export default function PropertyEdit() {
             floorCount: formData.floorCount,
             totalArea: formData.totalArea,
             yearBuilt: formData.yearBuilt,
+            propertyImages: formData.propertyImages,
+            propertyDeed:formData.propertyDeed || [],
             currentBuildingUse: formData.currentBuildingUse,
             buildingCondition: formData.buildingCondition,
-            buildingFeatures: formData.buildingFeatures
+            buildingFeatures: formData.buildingFeatures,
+            landType: formData.landType,
+            landSize: formData.landSize,
+            landSizeUnit: formData.landSizeUnit,
+            landCondition: formData.landCondition,
+            landUse: formData.landUse,
+            plotNumber: formData.plotNumber,
+            blockNumber: formData.blockNumber,
+            layoutName: formData.layoutName,
+            surveyPlanNumber: formData.surveyPlanNumber,
+            beaconNumbers: formData.beaconNumbers,
+            perimeter: formData.perimeter,
+            shape: formData.shape,
+            topography: formData.topography,
+            zoningClassification: formData.zoningClassification,
+            titleType: formData.titleType,
+            titleReferenceNumber: formData.titleReferenceNumber,
+            easements: formData.easements,
+            roadAccess: formData.roadAccess,
+            utilityAccess: formData.utilityAccess,
+            proposedUse: formData.proposedUse,
+            currentUse: formData.currentUse
           }
           break
 
@@ -625,6 +678,8 @@ export default function PropertyEdit() {
             beaconNumbers: formData.beaconNumbers,
             perimeter: formData.perimeter,
             shape: formData.shape,
+            propertyImages:formData.propertyImages,
+            propertyDeed:formData.propertyDeed || [],
             topography: formData.topography,
             zoningClassification: formData.zoningClassification,
             titleType: formData.titleType,
@@ -653,6 +708,8 @@ export default function PropertyEdit() {
             fuelType: formData.fuelType,
             transmission: formData.transmission,
             mileage: formData.mileage,
+            propertyImages: formData.propertyImages,
+            propertyDeed:formData.propertyDeed || [],
             lastServiceDate: formData.lastServiceDate,
             nextServiceDue: formData.nextServiceDue,
             insuranceProvider: formData.insuranceProvider,
@@ -679,6 +736,8 @@ export default function PropertyEdit() {
             totalToilets: formData.totalToilets,
             totalHostels: formData.totalHostels,
             totalLibraries: formData.totalLibraries,
+            propertyImages: formData.propertyImages,
+            propertyDeed:formData.propertyDeed || [],
             totalAuditoriums: formData.totalAuditoriums,
             totalSportsFacilities: formData.totalSportsFacilities,
             institutionCondition: formData.institutionCondition,
@@ -705,6 +764,8 @@ export default function PropertyEdit() {
             facilityFeatures: formData.facilityFeatures,
             tankCapacities: formData.tankCapacities,
             pumpTypes: formData.pumpTypes,
+            propertyImages: formData?.propertyImages,
+            propertyDeed:formData.propertyDeed || [],
             safetyEquipment: formData.safetyEquipment
           }
           break
@@ -718,7 +779,9 @@ export default function PropertyEdit() {
             operatingHours: formData.operatingHours,
             maintenanceSchedule: formData.maintenanceSchedule,
             equipmentList: formData.equipmentList,
-            infrastructureDetails: formData.infrastructureDetails
+            infrastructureDetails: formData.infrastructureDetails,
+            propertyImages: formData?.propertyImages,
+            propertyDeed:formData.propertyDeed || [],
           }
           break
       }
@@ -750,6 +813,87 @@ export default function PropertyEdit() {
       setSaving(false)
     }
   }
+const urlEndpoint = 'https://ik.imagekit.io/bdic';
+const publicKey = 'public_k/7VGHSYTH1q/STxZGOGFWUrsdE='; 
+const authenticator =  async () => {
+ 
+    try {
+        const response = await axios.post('https://bdicisp.onrender.com/api/v1/auth/imagekit/auth');
+
+        if (!response.data) {
+            const errorText = await response.data;
+            throw new Error(`Request failed with status ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.data;
+        const { signature, expire, token } = data;
+     
+        return { signature, expire, token };
+    } catch (error) {
+        //throw new Error(`Authentication request failed: ${error.message}`);
+    }
+};
+
+
+const [uploading,setUploading] = useState(false)
+const [iuploading,setIUploading] = useState(false)
+const [duploading,setDUploading] = useState(false)
+
+
+const onIdeedsError = (err:any) => {
+  console.log("Error", err,iuploading);
+  setIUploading(false)
+  setDUploading(false)
+};
+
+const onIdeedsSuccess = (res:any) => {
+  setIUploading(false)
+  setIsUploading(false)
+  setFormData((prev) => {
+    const updatedImages = [...(prev.propertyImages || []), res.url];
+    console.log("Success...", res.url, updatedImages);
+    if (property) {
+      setProperty({ ...property, propertyImages: updatedImages });
+    }
+    return { ...prev, propertyImages: updatedImages };
+  });
+};
+
+const onIdeedsUploadProgress = (progress:any) => {
+  setIUploading(true)
+  setIsUploading(true)
+  console.log("Progress...", progress);
+};
+
+
+
+const onDdeedsError = (err:any) => {
+  console.log("Error", err);
+  setUploading(false)
+  setDUploading(false)
+};
+
+const onDdeedsSuccess = (res:any) => {
+  setDUploading(false)
+  setFormData((prev) => {
+    const updatedImages = [...(prev.propertyDeed || []), res.url];
+    console.log("Success...", res.url, updatedImages);
+    if (property) {
+      setProperty({ ...property, propertyDeed: updatedImages });
+    }
+    return { ...prev, propertyDeed: updatedImages };
+  });
+};
+
+const onDdeedsUploadProgress = (progress:any) => {
+  setDUploading(true)
+  //setIsUploading(true)
+  console.log("Progress...", progress);
+};
+
+
+
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -770,51 +914,44 @@ export default function PropertyEdit() {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+  // const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = e.target.files
+  //   if (!files || files.length === 0) return
 
-    try {
-      setIsUploading(true)
-      const formData = new FormData()
-      Array.from(files).forEach((file) => {
-        formData.append('images', file)
-      })
+  //   try {
+  //     setIsUploading(true)
+  //     const formData = new FormData()
+  //     Array.from(files).forEach((file) => {
+  //       formData.append('images', file)
+  //     })
 
-      const response = await axios.post(
-        `https://bdicisp.vercel.app/api/v1/properties/${id}/images`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
+  //     const response = await axios.post(
+  //       `https://bdicisp.vercel.app/api/v1/properties/${id}/images`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //           'Content-Type': 'multipart/form-data',
+  //         },
+  //       }
+  //     )
 
-      if (property) {
-        setProperty({
-          ...property,
-          propertyImages: [...(property.propertyImages || []), ...response.data.data.images],
-        })
-      }
-    } catch (err) {
-      if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || "Failed to upload images")
-      } else {
-        setError("An unexpected error occurred")
-      }
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const urlEndpoint = 'https://ik.imagekit.io/bdic';
-  const publicKey = 'public_k/7VGHSYTH1q/STxZGOGFWUrsdE='
-  const authenticationEndpoint ="https://bdicisp.onrender.com/api/v1/auth/imagekit/auth"
-  const imagekitConfigOptions = { urlEndpoint,publicKey,authenticationEndpoint };
-  imagekitConfigOptions.publicKey = publicKey;
-  imagekitConfigOptions.authenticationEndpoint = authenticationEndpoint;
+  //     if (property) {
+  //       setProperty({
+  //         ...property,
+  //         propertyImages: [...(property.propertyImages || []), ...response.data.data.images],
+  //       })
+  //     }
+  //   } catch (err) {
+  //     if (axios.isAxiosError(err)) {
+  //       setError(err.response?.data?.message || "Failed to upload images")
+  //     } else {
+  //       setError("An unexpected error occurred")
+  //     }
+  //   } finally {
+  //     setIsUploading(false)
+  //   }
+  // }
 
   if (loading) {
     return (
@@ -1400,12 +1537,14 @@ export default function PropertyEdit() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select fuel type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="petrol">Petrol</SelectItem>
-                        <SelectItem value="diesel">Diesel</SelectItem>
-                        <SelectItem value="electric">Electric</SelectItem>
-                        <SelectItem value="hybrid">Hybrid</SelectItem>
-                      </SelectContent>
+                         <SelectContent>
+                    <SelectItem value="petrol">Petrol</SelectItem>
+                    <SelectItem value="diesel">Diesel</SelectItem>
+                    <SelectItem value="electric">Electric</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                    <SelectItem value="cng">CNG</SelectItem>
+                    <SelectItem value="lpg">LPG</SelectItem>
+                  </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
@@ -1670,19 +1809,15 @@ export default function PropertyEdit() {
                       <SelectValue placeholder="Select institution type" />
                     </SelectTrigger>
                     <SelectContent>
-          
-
-
-                      <SelectItem value="university">University</SelectItem>
-                  <SelectItem value="polytechnic">Polytechnic</SelectItem>
-                  <SelectItem value="collegeofeducation">College Of Education</SelectItem>
-                  <SelectItem value="secondary">Secondary School</SelectItem>
-                  <SelectItem value="NurseryPrimarySecondary">Nursery,Primary & Secondary School</SelectItem>
-                  <SelectItem value="vocational">Vocational/Training Center</SelectItem>
-                  <SelectItem value="special">Special Education School</SelectItem>
-                  <SelectItem value="technical">Technical College</SelectItem>
-                  <SelectItem value="research">Research Institute</SelectItem>
-                    </SelectContent>
+                  {Object.entries(educationalInstitutionTypes).map(([category, types]) => (
+                    <SelectGroup key={category}>
+                      <SelectLabel>{category}</SelectLabel>
+                      {types.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
                   </Select>
                 </div>
 
@@ -1921,6 +2056,340 @@ export default function PropertyEdit() {
             </Card>
           )}
 
+          {/* Petroleum Details - Only show when property type is petroleum */}
+          {formData.propertyType === "petroleum" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Petroleum Station Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="facilityType">Facility Type</Label>
+                 <Select
+                    value={formData.facilityType}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, facilityType: value }))
+                    }
+                  >
+                  <SelectTrigger>
+                  <SelectValue placeholder="Select facility type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                  <SelectItem value="filling_station">Filling Station</SelectItem>
+                  <SelectItem value="depot">Depot</SelectItem>
+                  <SelectItem value="terminal">Terminal</SelectItem>
+                  <SelectItem value="CNG Station">CNG Station</SelectItem>
+                  <SelectItem value="lpg_plant">LPG Plant</SelectItem>
+                  <SelectItem value="Bulk Storage Facility">Bulk Storage Facility</SelectItem>
+                  <SelectItem value="lubricant_plant">Lubricant Plant</SelectItem>
+                  <SelectItem value="aviation_fuel">Aviation Fuel Facility</SelectItem>
+                 </SelectContent>
+                </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="facilityCapacity">Facility Capacity</Label>
+                  <Input
+                    id="facilityCapacity"
+                    name="facilityCapacity"
+                    value={formData.facilityCapacity}
+                    onChange={handleChange}
+                    placeholder="Enter facility capacity"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="facilityStatus">Facility Status</Label>
+                  <Select
+                    value={formData.facilityStatus}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, facilityStatus: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select facility status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="operational">Operational</SelectItem>
+                      <SelectItem value="under_maintenance">Under Maintenance</SelectItem>
+                      <SelectItem value="temporarily_closed">Temporarily Closed</SelectItem>
+                      <SelectItem value="permanently_closed">Permanently Closed</SelectItem>
+                      <SelectItem value="under_construction">Under Construction</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="totalTanks">Total Tanks</Label>
+                    <Input
+                      id="totalTanks"
+                      name="totalTanks"
+                      type="number"
+                      value={formData.totalTanks}
+                      onChange={handleChange}
+                      placeholder="Enter total tanks"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="totalPumps">Total Pumps</Label>
+                    <Input
+                      id="totalPumps"
+                      name="totalPumps"
+                      type="number"
+                      value={formData.totalPumps}
+                      onChange={handleChange}
+                      placeholder="Enter total pumps"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="totalDispensers">Total Dispensers</Label>
+                    <Input
+                      id="totalDispensers"
+                      name="totalDispensers"
+                      type="number"
+                      value={formData.totalDispensers}
+                      onChange={handleChange}
+                      placeholder="Enter total dispensers"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="totalStorage">Total Storage</Label>
+                    <Input
+                      id="totalStorage"
+                      name="totalStorage"
+                      value={formData.totalStorage}
+                      onChange={handleChange}
+                      placeholder="Enter total storage"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fuelTypes">Fuel Types</Label>
+                  <Input
+                    id="fuelTypes"
+                    name="fuelTypes"
+                    value={formData.fuelTypes?.join(", ") || ""}
+                    onChange={(e) => {
+                      const values = e.target.value.split(",").map(v => v.trim()).filter(v => v);
+                      setFormData((prev) => ({ ...prev, fuelTypes: values }));
+                    }}
+                    placeholder="Enter fuel types (comma separated)"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="safetyCertification">Safety Certification</Label>
+                  <Input
+                    id="safetyCertification"
+                    name="safetyCertification"
+                    value={formData.safetyCertification}
+                    onChange={handleChange}
+                    placeholder="Enter safety certification"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="lastInspectionDate">Last Inspection Date</Label>
+                    <Input
+                      id="lastInspectionDate"
+                      name="lastInspectionDate"
+                      type="date"
+                      value={formData.lastInspectionDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="nextInspectionDate">Next Inspection Date</Label>
+                    <Input
+                      id="nextInspectionDate"
+                      name="nextInspectionDate"
+                      type="date"
+                      value={formData.nextInspectionDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="facilityCondition">Facility Condition</Label>
+                  <Select
+                    value={formData.facilityCondition}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, facilityCondition: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select facility condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                      <SelectItem value="needs_renovation">Needs Renovation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="facilityFeatures">Facility Features</Label>
+                  <Textarea
+                    id="facilityFeatures"
+                    name="facilityFeatures"
+                    value={formData.facilityFeatures}
+                    onChange={handleChange}
+                    placeholder="Enter facility features"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Tank Capacities</Label>
+                  <div className="space-y-2">
+                    {formData.tankCapacities?.map((tank, index) => (
+                      <div key={index} className="grid grid-cols-3 gap-2">
+                        <Input
+                          placeholder="Type"
+                          value={tank.type}
+                          onChange={(e) => {
+                            const newTanks = [...(formData.tankCapacities || [])];
+                            newTanks[index] = { ...tank, type: e.target.value };
+                            setFormData((prev) => ({ ...prev, tankCapacities: newTanks }));
+                          }}
+                        />
+                        <Input
+                          placeholder="Capacity"
+                          value={tank.capacity}
+                          onChange={(e) => {
+                            const newTanks = [...(formData.tankCapacities || [])];
+                            newTanks[index] = { ...tank, capacity: e.target.value };
+                            setFormData((prev) => ({ ...prev, tankCapacities: newTanks }));
+                          }}
+                        />
+                        <Input
+                          placeholder="Unit"
+                          value={tank.unit}
+                          onChange={(e) => {
+                            const newTanks = [...(formData.tankCapacities || [])];
+                            newTanks[index] = { ...tank, unit: e.target.value };
+                            setFormData((prev) => ({ ...prev, tankCapacities: newTanks }));
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          tankCapacities: [...(prev.tankCapacities || []), { type: "", capacity: "", unit: "" }],
+                        }));
+                      }}
+                    >
+                      Add Tank
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Pump Types</Label>
+                  <div className="space-y-2">
+                    {formData.pumpTypes?.map((pump, index) => (
+                      <div key={index} className="grid grid-cols-2 gap-2">
+                        <Input
+                          placeholder="Type"
+                          value={pump.type}
+                          onChange={(e) => {
+                            const newPumps = [...(formData.pumpTypes || [])];
+                            newPumps[index] = { ...pump, type: e.target.value };
+                            setFormData((prev) => ({ ...prev, pumpTypes: newPumps }));
+                          }}
+                        />
+                        <Input
+                          placeholder="Count"
+                          value={pump.count}
+                          onChange={(e) => {
+                            const newPumps = [...(formData.pumpTypes || [])];
+                            newPumps[index] = { ...pump, count: e.target.value };
+                            setFormData((prev) => ({ ...prev, pumpTypes: newPumps }));
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          pumpTypes: [...(prev.pumpTypes || []), { type: "", count: "" }],
+                        }));
+                      }}
+                    >
+                      Add Pump Type
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Safety Equipment</Label>
+                  <div className="space-y-2">
+                    {formData.safetyEquipment?.map((equipment, index) => (
+                      <div key={index} className="grid grid-cols-3 gap-2">
+                        <Input
+                          placeholder="Name"
+                          value={equipment.name}
+                          onChange={(e) => {
+                            const newEquipment = [...(formData.safetyEquipment || [])];
+                            newEquipment[index] = { ...equipment, name: e.target.value };
+                            setFormData((prev) => ({ ...prev, safetyEquipment: newEquipment }));
+                          }}
+                        />
+                        <Input
+                          placeholder="Quantity"
+                          value={equipment.quantity}
+                          onChange={(e) => {
+                            const newEquipment = [...(formData.safetyEquipment || [])];
+                            newEquipment[index] = { ...equipment, quantity: e.target.value };
+                            setFormData((prev) => ({ ...prev, safetyEquipment: newEquipment }));
+                          }}
+                        />
+                        <Input
+                          type="date"
+                          value={equipment.lastInspection}
+                          onChange={(e) => {
+                            const newEquipment = [...(formData.safetyEquipment || [])];
+                            newEquipment[index] = { ...equipment, lastInspection: e.target.value };
+                            setFormData((prev) => ({ ...prev, safetyEquipment: newEquipment }));
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          safetyEquipment: [...(prev.safetyEquipment || []), { name: "", quantity: "", lastInspection: "" }],
+                        }));
+                      }}
+                    >
+                      Add Safety Equipment
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Location Details */}
           <Card>
             <CardHeader>
@@ -2031,7 +2500,7 @@ export default function PropertyEdit() {
           </Card>
 
           {/* Documents */}
-          <Card className="md:col-span-2">
+          {/* <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Documents</CardTitle>
               <CardDescription>Upload or update property documents</CardDescription>
@@ -2046,7 +2515,7 @@ export default function PropertyEdit() {
                         className="flex  items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
                         <span className="text-sm text-gray-600">Document {index + 1}</span>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600">
+                        <Button  variant="ghost" size="sm" className="text-red-500 hover:text-red-600">
                           Remove  
                         </Button>
                       </div>
@@ -2061,13 +2530,209 @@ export default function PropertyEdit() {
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-2 text-gray-400" />
                       <p className="mb-1 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
+                        <span className="font-semibold">Click to upload</span>
                       </p>
                       <p className="text-xs text-gray-500">PDF, DOC, or DOCX (MAX. 10MB)</p>
                     </div>
                     <input id="dropzone-file" type="file" className="hidden" />
                   </label>
                 </div>
+              </div>
+            </CardContent>
+          </Card> */}
+
+
+           {/* Property Documents */}
+           <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Property Documents</CardTitle>
+              <CardDescription>Upload and manage property documents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Main Image */}
+                <div className="bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center" style={{ height: '500px' }}>
+                  {property?.propertyDeed && property.propertyDeed.length > 0 ? (
+                    // <img
+                    //   src={selectedImage || property.propertyDeed[0]}
+                    //   alt={property.propertyType}
+                    //   className="max-w-full max-h-full object-contain cursor-pointer"
+                    //   onClick={() => {
+                    //     if (property.propertyDeed && property.propertyDeed.length > 0) {
+                    //       setSelectedImage(property.propertyDeed[0])
+                    //       setIsPreviewOpen(true)
+                    //     }
+                    //   }}
+                    // />
+
+                    <div className="flex flex-col items-center justify-center h-full">
+                    <a 
+                      href={selectedImage || property.propertyDeed[0]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center justify-center"
+                    >
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="48" 
+                        height="48" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        className="text-gray-400"
+                      >
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <path d="M12 18v-6"/>
+                        <path d="M8 18v-1"/>
+                        <path d="M16 18v-3"/>
+                      </svg>
+                      <span className="text-sm text-gray-500 mt-2">View Document</span>
+                    </a>
+                  </div>
+                  ) : (
+                    <div className="flex items-center justify-center">
+                      <ImageIcon className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnails */}
+                {property?.propertyDeed && property.propertyDeed.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {property.propertyDeed.map((image, index) => (
+                      <div
+                        key={index}
+                        className={`relative rounded-md overflow-hidden cursor-pointer border-2 flex items-center justify-center ${
+                          selectedImage === image ? "border-primary" : "border-transparent"
+                        }`}
+                        style={{ height: '250px' }}
+                      >
+                        {image.split('/')[5] === 'documents' ? (
+                          <div className="flex flex-col items-center justify-center h-full">
+                            <a 
+                              href={image}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-col items-center justify-center"
+                            >
+                              <svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="48" 
+                                height="48" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                className="text-gray-400"
+                              >
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <path d="M12 18v-6"/>
+                                <path d="M8 18v-1"/>
+                                <path d="M16 18v-3"/>
+                              </svg>
+                              <span className="text-sm text-gray-500 mt-2">View Document</span>
+                            </a>
+                          </div>
+                        ) : (
+                          <img
+                            src={image}
+                            alt={`Property document ${index + 1}`}
+                            className="max-w-full max-h-full object-contain"
+                            onClick={() => {
+                              setSelectedImage(image)
+                              setIsPreviewOpen(true)
+                            }}
+                          />
+                        )}
+                        {/* <img
+                          src={image}
+                          alt={`Property document ${index + 1}`}
+                          className="max-w-full max-h-full object-contain"
+                          onClick={() => {
+                            setSelectedImage(image)
+                            setIsPreviewOpen(true)
+                          }}
+                        /> */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          
+                          type="button"
+                          className="absolute top-1 right-1 h-6 w-6 bg-red-500/80 hover:bg-red-500 text-white"
+                          onClick={() => handleDeleteImage(index)}
+                          disabled={isDeleting}
+                        >
+                          <X className="h-4 w-4" /> 
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              <IKContext
+                  urlEndpoint={urlEndpoint}
+                  publicKey={publicKey}
+                  
+                  authenticator={authenticator}
+                >
+
+  
+             {/* Upload Button */}
+             <div className="flex items-center justify-center w-full">
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                  >
+              {
+                    duploading &&  <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+              }
+                    <div className="flex flex-col items-center justify-center pt-10 pb-6 ">
+                      <Upload className="w-5 h-5 mb-2 mt-5 text-gray-400" />
+                      <p className="mb-1 text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> 
+                      </p>
+                      <p className="text-xs text-gray-500">PDF,PNG,JPEG (MAX. 10MB)</p>
+                      <IKUpload
+                      id="property-documents"
+                      name="property-documents"
+                      className="hidden"
+                      multiple={false}
+                      onUploadProgress={onDdeedsUploadProgress}
+                      folder={"/benue-government-properties/documents"}
+                      fileName="test-upload.png"
+                      onError={onDdeedsError}
+                      onSuccess={onDdeedsSuccess}
+                       />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4 h-8 mb-5 "
+                      type="button"
+                      disabled={uploading || false}
+                      onClick={() =>  document.getElementById("property-documents")?.click()}
+                    >
+                      Select File
+                    </Button>
+                   
+                    </div>
+
+             
+                  </label>
+
+                  
+                </div>
+
+      </IKContext>
+           
               </div>
             </CardContent>
           </Card>
@@ -2125,44 +2790,76 @@ export default function PropertyEdit() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          
+                          type="button"
                           className="absolute top-1 right-1 h-6 w-6 bg-red-500/80 hover:bg-red-500 text-white"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            // handleDeleteImage(image)
-                          }}
+                          onClick={() => handleDeleteImage(index)}
                           disabled={isDeleting}
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-4 w-4" /> 
                         </Button>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Upload Button */}
-                <div className="flex items-center justify-center w-full">
+              <IKContext
+                  urlEndpoint={urlEndpoint}
+                  publicKey={publicKey}
+                  
+                  authenticator={authenticator}
+                >
+
+  
+             {/* Upload Button */}
+             <div className="flex items-center justify-center w-full">
                   <label
                     htmlFor="image-upload"
                     className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
                   >
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-2 text-gray-400" />
+              {
+                    isUploading &&  <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+              }
+                    <div className="flex flex-col items-center justify-center pt-10 pb-6 ">
+                      <Upload className="w-5 h-5 mb-2 mt-5 text-gray-400" />
                       <p className="mb-1 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
+                        <span className="font-semibold">Click to upload</span> 
                       </p>
                       <p className="text-xs text-gray-500">JPG, PNG, or GIF (MAX. 10MB)</p>
-                    </div>
-                    <input
-                      id="image-upload"
-                      type="file"
+                      <IKUpload
+                      id="property-images"
+                      name="property-images"
                       className="hidden"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      disabled={isUploading}
-                    />
+                      multiple={false}
+                      onUploadProgress={onIdeedsUploadProgress}
+                      folder={"/benue-government-properties/images"}
+                      fileName="test-upload.png"
+                      onError={onIdeedsError}
+                      onSuccess={onIdeedsSuccess}
+                       />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4 h-8 mb-5 "
+                      type="button"
+                      disabled={uploading || false}
+                      onClick={() =>  document.getElementById("property-images")?.click()}
+                    >
+                      Select File
+                    </Button>
+                   
+                    </div>
+
+             
                   </label>
+
+                  
                 </div>
+
+      </IKContext>
+           
               </div>
             </CardContent>
           </Card>

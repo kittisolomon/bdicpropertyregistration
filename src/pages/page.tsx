@@ -34,13 +34,13 @@ export default function GovPropertyPortal() {
     const fetchUserRole = async () => {
       try {
         const users = localStorage.getItem("userData")
-        if (!users) {
+        if (!users && !isLandingPage) {
           console.error("No user data found")
           navigate("/admin/securelogin/login/")
           return
         }
-        const userData = JSON.parse(users)
-        if (!userData.role) {
+        const userData = JSON.parse(users || "{}")
+        if (!userData.role && !isLandingPage) {
           console.error("No role found in user data")
           navigate("/admin/securelogin/login/")
           return
