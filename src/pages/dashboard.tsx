@@ -20,6 +20,9 @@ import { useNavigate } from "react-router-dom"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { hasPermissions,canRegisterProperty, canGenerateReports, canViewStats, canViewProperties } from "@/lib/permissions"
 import { Role } from "@/types"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
 
 // Register ChartJS components
 ChartJS.register(
@@ -93,6 +96,25 @@ export default function Dashboard() {
   const [selectedDocType, setSelectedDocType] = useState<"pdf" | "excel">("pdf")
   const [userRole, setUserRole] = useState<string | null>(null)
   const [permissions, setPermissions] = useState<Role[]>([])
+  const [reportPrompt, setReportPrompt] = useState("")
+  const [previewResponse, setPreviewResponse] = useState("")
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false)
+
+  const sampleReportData = `# GOVERNMENT ASSET MANAGEMENT ANALYTICAL REPORT\n## In-Depth Analysis - May 2025\n\n---\n\n## Dataset Overview\n| Asset Category  | Count | % of Total | Value Range (if available) |\n|-----------------|-------|------------|----------------------------|\n| Land            | 2     | 12.5%      | N/A                        |\n| Building        | 4     | 25.0%      | N/A                        |\n| Vehicle         | 2     | 12.5%      | N/A                        |\n| Institution     | 5     | 31.3%      | N/A                        |\n| Petroleum       | 3     | 18.8%      | N/A                        |\n\n---\n\n## 1. Geographic Distribution Analysis\n### Current Distribution\n- **All assets concentrated in Benue State**  \n  - 100% of assets are located in Benue, indicating a lack of geographic diversification.  \n\n### Underserved Areas\n- **High-priority regions for expansion**:  \n  1. **Lagos State**: Economic hub with high population density.  \n  2. **Kano State**: Northern economic center with growing infrastructure.  \n  3. **Rivers State**: Key oil-producing region with strategic importance.  \n\n---\n\n## 2. Temporal Analysis\n### Acquisition Timeline\n- **Oldest asset**: March 22, 2002 (23 years old).  \n- **Newest asset**: June 6, 2025 (upcoming).  \n- **Average age of assets**: 23.2 years.  \n\n### Age Distribution\n| Age Range (Years) | Number of Assets |\n|-------------------|------------------|\n| 0-10              | 1                |\n| 11-20             | 5                |\n| 21-30             | 8                |\n| 31+               | 2                |\n\n---\n\n## 3. Financial Valuation\n### Current Status\n- **No valuation data available for land or buildings**.  \n- **Recommendation**: Conduct a comprehensive property appraisal to determine current market value.  \n\n### Estimated Costs for Appraisal\n| Asset Category  | Cost per Appraisal (₦) | Total Cost (₦) |\n|-----------------|------------------------|----------------|\n| Land            | 500,000               | 1,000,000      |\n| Building        | 750,000               | 3,000,000      |\n| Vehicle         | 200,000               | 400,000        |\n| Institution     | 1,000,000             | 5,000,000      |\n| Petroleum       | 1,500,000             | 4,500,000      |\n\n**Total Estimated Appraisal Cost**: ₦13,900,000  \n\n---\n\n## 4. Condition & Utilization\n### Current Status\n- **No condition data available**.  \n- **Recommendation**: Conduct a condition survey to assess asset health and utilization.  \n\n### Estimated Costs for Condition Survey\n| Asset Category  | Cost per Survey (₦) | Total Cost (₦) |\n|-----------------|---------------------|----------------|\n| Land            | 300,000            | 600,000        |\n| Building        | 500,000            | 2,000,000      |\n| Vehicle         | 150,000            | 300,000        |\n| Institution     | 800,000            | 4,000,000      |\n| Petroleum       | 1,000,000          | 3,000,000      |\n\n**Total Estimated Survey Cost**: ₦9,900,000  \n\n---\n\n## 5. Strategic Recommendations\n### 1. Geographic
+   Expansion\n- **Priority Regions**: Lagos, Kano, Rivers. 
+\n- **Estimated Cost**: ₦500,000,000 per region (land acquisition and initial setup). 
+\n- **ROI Projection**: 10-15% over 5 years.  \n\n### 2. Asset Diversification\n- **Missing Categories**: Healthcare, Education, Public Transport.  \n- **Estimated Cost**:  \n  - Healthcare: ₦200,000,000 per facility.  \n
+ - Education: ₦150,000,000 per school.  \n  - Public Transport: ₦300,000,000 per project. 
+\n\n### 3. Maintenance Program\n- **Critical Repairs**: 0 buildings require immediate attention. 
+\n- **Annual Maintenance Budget**: ₦50,000,000.  \n\n---\n\n## Executive Dashboard\n### Visualizations\n1. **Geographic Distribution Heatmap**: Highlighting Benue and priority regions.
+\n2. **Asset Age Pyramid**: Showing distribution of asset ages. 
+\n3. **Condition Status Pie Chart**: Pending survey data.
+\n\n---\n\n## Actionable Metrics\n1. **Immediate Reallocation Candidates**: 0 identified (pending survey).
+\n2. **Acquisition Priority Score**:  \n   - Lagos: 9/10  \n   - Kano: 8/10  \n   - Rivers: 7/10  \n3. **Risk Exposure**: 0 high-risk assets.  \n\n---\n\n## Next Steps\n1. **Conduct comprehensive appraisals** for all unvalued assets (₦13,900,000). 
+\n2. **Implement condition surveys** to assess asset health (₦9,900,000).  \n3. **Develop a 3-year acquisition plan** focusing on:  \n   - Geographic expansion to Lagos, Kano, and Rivers.  \n  
+ - Diversification into healthcare, education, and public transport.  \n\n---\n\n## Special Analysis\n### Custom Request: In-Depth Analysis\n- **Time Period**: May 2025.  \n- **Focus Areas**: Geographic distribution and financial valuation.  \n- **Key Metrics**:  \n  - Geographic concentration in Benue.  \n  
+ - Lack of financial valuation data.  \n\n---\n\n**Note**: All costs are estimates and subject to change based on market conditions.`
+
   const fetchPropertyStats = async () => {
     try {
       const token = localStorage.getItem("authToken")
@@ -283,13 +305,17 @@ export default function Dashboard() {
     try {
       setIsGeneratingReport(true)
       const token = localStorage.getItem("authToken")
-      const response = await axios.get(
-        `https://bdicisp.onrender.com/api/v1/reports/properties?format=${docType}`,
+      const response = await axios.post(
+        `https://bdicisp.onrender.com/api/v1/properties/collection/aireport`,
+        {
+          userPrompt: reportPrompt,
+          format: docType
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          responseType: "blob", // Important for downloading files
+         // responseType: "blob", // Important for downloading files
         }
       )
 
@@ -297,32 +323,53 @@ export default function Dashboard() {
       const blob = new Blob([response.data], { 
         type: docType === "pdf" ? "application/pdf" : "application/vnd.ms-excel" 
       })
+
+      console.error(response.data.report)
+     // setIsGeneratingPreview(true)
+      setPreviewResponse(response.data.report)
        
       // Create a URL for the blob
       const url = window.URL.createObjectURL(blob)
        
       // Create a temporary link element
-      const link = document.createElement("a")
-      link.href = url
-      link.download = `property-report-${new Date().toISOString().split("T")[0]}.${docType === "excel" ? "xls" : "pdf"}`
+      // const link = document.createElement("a")
+      // link.href = url
+      // link.download = `ai-property-report-${new Date().toISOString().split("T")[0]}.${docType === "excel" ? "xls" : "pdf"}`
        
-      // Append the link to the document
-      document.body.appendChild(link)
+      // // Append the link to the document
+      // document.body.appendChild(link)
        
-      // Trigger the download
-      link.click()
+      // // Trigger the download
+      // link.click()
        
-      // Clean up
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(link)
+      // // Clean up
+      // window.URL.revokeObjectURL(url)
+      // document.body.removeChild(link)
     } catch (error) {
       console.error("Error generating report:", error)
-      // You might want to show an error message to the user here
+      toast.error("Failed to generate report. Please try again.")
     } finally {
       setIsGeneratingReport(false)
-      setIsReportDialogOpen(false)
+      setIsReportDialogOpen(true)
     }
   }
+
+  const generatePreview = async () => {
+    if (!reportPrompt.trim()) return
+    
+    try {
+      setIsGeneratingPreview(true)
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+     // setPreviewResponse(sampleReportData)
+    } catch (error) {
+      console.error("Error generating preview:", error)
+      toast.error("Failed to generate preview. Please try again.")
+    } finally {
+      setIsGeneratingPreview(false)
+    }
+  }
+
   // Check if user has permission to view dashboard
   if (!userRole || !hasPermissions(userRole, "View Stats", permissions)) {
     return (
@@ -606,40 +653,104 @@ export default function Dashboard() {
       {/* Report Type Selection Dialog */}
       {userRole && canGenerateReports(permissions, userRole) && (
         <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
-              <DialogTitle>Select Report Type</DialogTitle>
+              <DialogTitle>Generate AI Report</DialogTitle>
               <DialogDescription>
-                Choose the format for your property report
+                Describe what kind of report you want to generate
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Button
-                  variant={selectedDocType === "pdf" ? "default" : "outline"}
-                  onClick={() => setSelectedDocType("pdf")}
-                  className="flex flex-col items-center gap-2 h-24"
-                >
-                  <FileText className="h-8 w-8" />
-                  <span>PDF Report</span>
-                </Button>
-                <Button
-                  variant={selectedDocType === "excel" ? "default" : "outline"}
-                  onClick={() => setSelectedDocType("excel")}
-                  className="flex flex-col items-center gap-2 h-24"
-                >
-                  <BarChart3 className="h-8 w-8" />
-                  <span>Excel Report</span>
-                </Button>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reportPrompt">Report Description</Label>
+                  <Textarea
+                    id="reportPrompt"
+                    value={reportPrompt}
+                    onChange={(e) => setReportPrompt(e.target.value)}
+                    placeholder="Example: Generate a comprehensive report analyzing property distribution across different states, including value trends and occupancy rates..."
+                    className="min-h-[60px] max-h-[60px]"
+                  />
+                  {/* <Button 
+                    onClick={generatePreview}
+                    disabled={isGeneratingPreview || !reportPrompt.trim()}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {isGeneratingPreview ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating Preview...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Generate Preview
+                      </>
+                    )}
+                  </Button> */}
+                </div>
+
+                {previewResponse && (
+                  <div className="space-y-2">
+                    <Label>Preview</Label>
+                    <div className="rounded-lg border bg-card p-4 max-h-[400px] min-h-[400px] overflow-y-auto">
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        {previewResponse.split('\n').map((line, i) => {
+                          if (line.startsWith('|')) {
+                            return <div key={i} className="overflow-x-auto"><pre className="whitespace-pre-wrap">{line}</pre></div>
+                          }
+                          if (line.startsWith('#')) {
+                            const level = line.match(/^#+/)?.[0].length || 1
+                            const text = line.replace(/^#+\s*/, '')
+                            const Tag = `h${level}` as keyof JSX.IntrinsicElements
+                            return <Tag key={i} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : 'text-lg'}`}>{text}</Tag>
+                          }
+                          if (line.startsWith('- ')) {
+                            return <li key={i} className="ml-4">{line.replace(/^-\s*/, '')}</li>
+                          }
+                          if (line.trim() === '') {
+                            return <br key={i} />
+                          }
+                          return <p key={i}>{line}</p>
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{display:"none"}} className="grid grid-cols-2 gap-4">
+                  <Button
+                    variant={selectedDocType === "pdf" ? "default" : "outline"}
+                    onClick={() => setSelectedDocType("pdf")}
+                    className="flex items-center gap-2 h-12"
+                  >
+                    <FileText className="h-5 w-5" />
+                    <span>PDF Format</span>
+                  </Button>
+                  <Button
+                    variant={selectedDocType === "excel" ? "default" : "outline"}
+                    onClick={() => setSelectedDocType("excel")}
+                    className="flex items-center gap-2 h-12"
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span>Excel Format</span>
+                  </Button>
+                </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>
+              <Button variant="outline" onClick={() => {
+                setIsReportDialogOpen(false)
+                setPreviewResponse("")
+              }}>
                 Cancel
               </Button>
               <Button 
                 onClick={() => generateReport(selectedDocType)}
-                disabled={isGeneratingReport}
+                disabled={isGeneratingReport || !reportPrompt.trim() }
+                //disabled={isGeneratingReport || !reportPrompt.trim() || !previewResponse}
+                className="bg-primary hover:bg-primary/90"
               >
                 {isGeneratingReport ? (
                   <>
@@ -647,7 +758,10 @@ export default function Dashboard() {
                     Generating...
                   </>
                 ) : (
-                  "Generate Report"
+                  <>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Generate Report
+                  </>
                 )}
               </Button>
             </DialogFooter>
