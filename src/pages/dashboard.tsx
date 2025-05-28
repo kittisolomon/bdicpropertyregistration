@@ -100,23 +100,11 @@ export default function Dashboard() {
   const [previewResponse, setPreviewResponse] = useState("")
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false)
 
-  const sampleReportData = `# GOVERNMENT ASSET MANAGEMENT ANALYTICAL REPORT\n## In-Depth Analysis - May 2025\n\n---\n\n## Dataset Overview\n| Asset Category  | Count | % of Total | Value Range (if available) |\n|-----------------|-------|------------|----------------------------|\n| Land            | 2     | 12.5%      | N/A                        |\n| Building        | 4     | 25.0%      | N/A                        |\n| Vehicle         | 2     | 12.5%      | N/A                        |\n| Institution     | 5     | 31.3%      | N/A                        |\n| Petroleum       | 3     | 18.8%      | N/A                        |\n\n---\n\n## 1. Geographic Distribution Analysis\n### Current Distribution\n- **All assets concentrated in Benue State**  \n  - 100% of assets are located in Benue, indicating a lack of geographic diversification.  \n\n### Underserved Areas\n- **High-priority regions for expansion**:  \n  1. **Lagos State**: Economic hub with high population density.  \n  2. **Kano State**: Northern economic center with growing infrastructure.  \n  3. **Rivers State**: Key oil-producing region with strategic importance.  \n\n---\n\n## 2. Temporal Analysis\n### Acquisition Timeline\n- **Oldest asset**: March 22, 2002 (23 years old).  \n- **Newest asset**: June 6, 2025 (upcoming).  \n- **Average age of assets**: 23.2 years.  \n\n### Age Distribution\n| Age Range (Years) | Number of Assets |\n|-------------------|------------------|\n| 0-10              | 1                |\n| 11-20             | 5                |\n| 21-30             | 8                |\n| 31+               | 2                |\n\n---\n\n## 3. Financial Valuation\n### Current Status\n- **No valuation data available for land or buildings**.  \n- **Recommendation**: Conduct a comprehensive property appraisal to determine current market value.  \n\n### Estimated Costs for Appraisal\n| Asset Category  | Cost per Appraisal (₦) | Total Cost (₦) |\n|-----------------|------------------------|----------------|\n| Land            | 500,000               | 1,000,000      |\n| Building        | 750,000               | 3,000,000      |\n| Vehicle         | 200,000               | 400,000        |\n| Institution     | 1,000,000             | 5,000,000      |\n| Petroleum       | 1,500,000             | 4,500,000      |\n\n**Total Estimated Appraisal Cost**: ₦13,900,000  \n\n---\n\n## 4. Condition & Utilization\n### Current Status\n- **No condition data available**.  \n- **Recommendation**: Conduct a condition survey to assess asset health and utilization.  \n\n### Estimated Costs for Condition Survey\n| Asset Category  | Cost per Survey (₦) | Total Cost (₦) |\n|-----------------|---------------------|----------------|\n| Land            | 300,000            | 600,000        |\n| Building        | 500,000            | 2,000,000      |\n| Vehicle         | 150,000            | 300,000        |\n| Institution     | 800,000            | 4,000,000      |\n| Petroleum       | 1,000,000          | 3,000,000      |\n\n**Total Estimated Survey Cost**: ₦9,900,000  \n\n---\n\n## 5. Strategic Recommendations\n### 1. Geographic
-   Expansion\n- **Priority Regions**: Lagos, Kano, Rivers. 
-\n- **Estimated Cost**: ₦500,000,000 per region (land acquisition and initial setup). 
-\n- **ROI Projection**: 10-15% over 5 years.  \n\n### 2. Asset Diversification\n- **Missing Categories**: Healthcare, Education, Public Transport.  \n- **Estimated Cost**:  \n  - Healthcare: ₦200,000,000 per facility.  \n
- - Education: ₦150,000,000 per school.  \n  - Public Transport: ₦300,000,000 per project. 
-\n\n### 3. Maintenance Program\n- **Critical Repairs**: 0 buildings require immediate attention. 
-\n- **Annual Maintenance Budget**: ₦50,000,000.  \n\n---\n\n## Executive Dashboard\n### Visualizations\n1. **Geographic Distribution Heatmap**: Highlighting Benue and priority regions.
-\n2. **Asset Age Pyramid**: Showing distribution of asset ages. 
-\n3. **Condition Status Pie Chart**: Pending survey data.
-\n\n---\n\n## Actionable Metrics\n1. **Immediate Reallocation Candidates**: 0 identified (pending survey).
-\n2. **Acquisition Priority Score**:  \n   - Lagos: 9/10  \n   - Kano: 8/10  \n   - Rivers: 7/10  \n3. **Risk Exposure**: 0 high-risk assets.  \n\n---\n\n## Next Steps\n1. **Conduct comprehensive appraisals** for all unvalued assets (₦13,900,000). 
-\n2. **Implement condition surveys** to assess asset health (₦9,900,000).  \n3. **Develop a 3-year acquisition plan** focusing on:  \n   - Geographic expansion to Lagos, Kano, and Rivers.  \n  
- - Diversification into healthcare, education, and public transport.  \n\n---\n\n## Special Analysis\n### Custom Request: In-Depth Analysis\n- **Time Period**: May 2025.  \n- **Focus Areas**: Geographic distribution and financial valuation.  \n- **Key Metrics**:  \n  - Geographic concentration in Benue.  \n  
- - Lack of financial valuation data.  \n\n---\n\n**Note**: All costs are estimates and subject to change based on market conditions.`
 
   const fetchPropertyStats = async () => {
     try {
+      setIsGeneratingPreview(false)
+      isGeneratingPreview
       const token = localStorage.getItem("authToken")
       if (!token) {
         navigate("/")
@@ -320,16 +308,16 @@ export default function Dashboard() {
       )
 
       // Create a blob from the response data
-      const blob = new Blob([response.data], { 
-        type: docType === "pdf" ? "application/pdf" : "application/vnd.ms-excel" 
-      })
+      // const blob = new Blob([response.data], { 
+      //   type: docType === "pdf" ? "application/pdf" : "application/vnd.ms-excel" 
+      // })
 
       console.error(response.data.report)
      // setIsGeneratingPreview(true)
       setPreviewResponse(response.data.report)
        
       // Create a URL for the blob
-      const url = window.URL.createObjectURL(blob)
+//      const url = window.URL.createObjectURL(blob)
        
       // Create a temporary link element
       // const link = document.createElement("a")
@@ -354,21 +342,21 @@ export default function Dashboard() {
     }
   }
 
-  const generatePreview = async () => {
-    if (!reportPrompt.trim()) return
+  // const generatePreview = async () => {
+  //   if (!reportPrompt.trim()) return
     
-    try {
-      setIsGeneratingPreview(true)
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-     // setPreviewResponse(sampleReportData)
-    } catch (error) {
-      console.error("Error generating preview:", error)
-      toast.error("Failed to generate preview. Please try again.")
-    } finally {
-      setIsGeneratingPreview(false)
-    }
-  }
+  //   try {
+  //     setIsGeneratingPreview(true)
+  //     // Simulate API delay
+  //     await new Promise(resolve => setTimeout(resolve, 1000))
+  //    // setPreviewResponse(sampleReportData)
+  //   } catch (error) {
+  //     console.error("Error generating preview:", error)
+  //     toast.error("Failed to generate preview. Please try again.")
+  //   } finally {
+  //     setIsGeneratingPreview(false)
+  //   }
+  // }
 
   // Check if user has permission to view dashboard
   if (!userRole || !hasPermissions(userRole, "View Stats", permissions)) {
