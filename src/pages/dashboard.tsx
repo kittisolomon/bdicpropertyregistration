@@ -719,7 +719,7 @@ export default function Dashboard() {
                   </div>
                 )}
 
-                <div style={{display:"none"}} className="grid grid-cols-2 gap-4">
+                <div style={{display:"none"}} className="grid  grid-cols-2 gap-4">
                   <Button
                     variant={selectedDocType === "pdf" ? "default" : "outline"}
                     onClick={() => setSelectedDocType("pdf")}
