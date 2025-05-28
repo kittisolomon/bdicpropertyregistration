@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { IKContext, IKUpload } from 'imagekitio-react'
 import { Textarea } from "@/components/ui/textarea"
+
 import { Select, SelectContent, SelectGroup,SelectLabel,  SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
@@ -18,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import axios from "axios"
-import { educationalInstitutionTypes, vehicleTypes } from "@/lib/constants"
+import { educationalInstitutionTypes, vehicleTypes, buildingTypes } from "@/lib/constants"
 
 interface Property {
   _id: string
@@ -1189,7 +1190,7 @@ const onDdeedsUploadProgress = (progress:any) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="currentUse">Current Use</Label>
+                  <Label htmlFor="currentUse">Current Use </Label>
                   <Select
                     value={formData.currentUse}
                     onValueChange={(value) =>
@@ -1200,17 +1201,16 @@ const onDdeedsUploadProgress = (progress:any) => {
                       <SelectValue placeholder="Select current use" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Vacant">Vacant</SelectItem>
-                      <SelectItem value="Residential">Residential</SelectItem>
-                      <SelectItem value="Commercial">Commercial</SelectItem>
-                      <SelectItem value="Industrial">Industrial</SelectItem>
-                      <SelectItem value="Agricultural">Agricultural</SelectItem>
-                      <SelectItem value="Recreational">Recreational</SelectItem>
-                      <SelectItem value="Institutional">Institutional</SelectItem>
-                      <SelectItem value="Mixed Use">Mixed Use</SelectItem>
-                      <SelectItem value="Under Construction">Under Construction</SelectItem>
-                      <SelectItem value="Abandoned">Abandoned</SelectItem>
-                    </SelectContent>
+                  <SelectItem value="occupied_by_govt">Occupied (Government Use)</SelectItem>
+                  <SelectItem value="occupied_residential">Occupied (Residential)</SelectItem>
+                  <SelectItem value="leased_commercial">Leased (Commercial)</SelectItem>
+                  <SelectItem value="leased_residential">Leased (Residential)</SelectItem>
+                  <SelectItem value="vacant">Vacant</SelectItem>
+                  <SelectItem value="under_renovation">Under Renovation/Construction</SelectItem>
+                  <SelectItem value="mixed_use">Mixed Use</SelectItem>
+                  <SelectItem value="abandoned">Abandoned</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
                   </Select>
                 </div>
 
@@ -1691,7 +1691,29 @@ const onDdeedsUploadProgress = (progress:any) => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="buildingType">Building Type</Label>
-                  <Select
+
+                  <Select 
+                  value={formData.buildingType}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, buildingType: value }))
+                  }
+                  //onValueChange={(value) => handleSelectChange("buildingType", value)}
+                  >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select building type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(buildingTypes).map(([category, types]: [string, string[]]) => (
+                    <SelectGroup key={category}>
+                      <SelectLabel>{category.toUpperCase()}</SelectLabel>
+                      {types.map((type: string) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+                  {/* <Select
                     value={formData.buildingType}
                     onValueChange={(value) =>
                       setFormData((prev) => ({ ...prev, buildingType: value }))
@@ -1707,7 +1729,7 @@ const onDdeedsUploadProgress = (progress:any) => {
                       <SelectItem value="Commercial">Commercial</SelectItem>
                       <SelectItem value="Industrial">Industrial</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1759,11 +1781,16 @@ const onDdeedsUploadProgress = (progress:any) => {
                       <SelectValue placeholder="Select current use" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="leased_commercial">Leased (Commercial)</SelectItem>
-                      <SelectItem value="leased_residential">Leased (Residential)</SelectItem>
-                      <SelectItem value="government_use">Government Use</SelectItem>
-                      <SelectItem value="vacant">Vacant</SelectItem>
-                    </SelectContent>
+                  <SelectItem value="occupied_by_govt">Occupied (Government Use)</SelectItem>
+                  <SelectItem value="occupied_residential">Occupied (Residential)</SelectItem>
+                  <SelectItem value="leased_commercial">Leased (Commercial)</SelectItem>
+                  <SelectItem value="leased_residential">Leased (Residential)</SelectItem>
+                  <SelectItem value="vacant">Vacant</SelectItem>
+                  <SelectItem value="under_renovation">Under Renovation/Construction</SelectItem>
+                  <SelectItem value="mixed_use">Mixed Use</SelectItem>
+                  <SelectItem value="abandoned">Abandoned</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
                   </Select>
                 </div>
 

@@ -288,8 +288,8 @@ export default function Registration() {
 
   const authenticator =  async () => {
     try {
-      setUploading(true)
-      setIUploading(true)
+      // setUploading(true)
+      // setIUploading(true)
         const response = await axios.post('https://bdicisp.onrender.com/api/v1/auth/imagekit/auth');
 
         if (!response.data) {
